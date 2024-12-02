@@ -16,6 +16,20 @@ namespace ElgatoLightApiClient.Services
 
         private ApiHttpClient() => this._httpClient = new HttpClient();
 
+        internal async Task<LightInfoResponseDto> GetDeviceInfoAsync(String lightIpAddress, CancellationToken cancellationToken)
+        {
+            var baseUrl = LightIpAddressToBaseUrl(lightIpAddress);
+
+            var response = await this._httpClient.GetAsync($"{baseUrl}/elgato/accessory-info", cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<LightInfoResponseDto>(content);
+
+            return data;
+        }
+
         internal async Task<LightStateDto> GetStateAsync(String lightIpAddress, CancellationToken cancellationToken)
         {
             var baseUrl = LightIpAddressToBaseUrl(lightIpAddress);

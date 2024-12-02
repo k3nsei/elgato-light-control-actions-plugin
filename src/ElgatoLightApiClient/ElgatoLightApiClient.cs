@@ -1,5 +1,7 @@
 namespace ElgatoLightApiClient
 {
+    using System.Collections.Immutable;
+
     using Commands;
 
     using Queries;
@@ -10,8 +12,13 @@ namespace ElgatoLightApiClient
 
     public static class ElgatoLightApiClient
     {
-        public static void Init()
+        public static IObservable<IImmutableList<String>> Devices => DeviceDiscovery.Instance.Devices;
+
+        public static void Init(Action<String> logInfo, Action<Exception> logError)
         {
+            DeviceDiscovery.Instance.logInfo = logInfo;
+            DeviceDiscovery.Instance.logError = logError;
+
             Dispatcher.RegisterHandler<LightStateQuery>(new LightStateQueryHandler());
             Dispatcher.RegisterHandler<TurnOnCommand>(new TurnOnCommandHandler());
             Dispatcher.RegisterHandler<TurnOffCommand>(new TurnOffCommandHandler());
