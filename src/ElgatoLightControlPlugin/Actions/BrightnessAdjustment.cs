@@ -8,6 +8,8 @@ namespace Loupedeck.ElgatoLightControlPlugin
 
     using ElgatoLightApiClient;
 
+    using Helpers;
+
     public class BrightnessAdjustment : PluginDynamicAdjustment
     {
         private String _currentLightIpAddress = "";
@@ -29,7 +31,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
 
         protected override void ApplyAdjustment(String actionParameter, Int32 diff)
         {
-            PluginLog.Info($"AA ap {actionParameter ?? "none"}");
+            PluginLogger.Info($"AA ap {actionParameter ?? "none"}");
 
             var lightIpAddress = actionParameter;
 
@@ -50,7 +52,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
 
         protected override void RunCommand(String actionParameter)
         {
-            PluginLog.Info($"RC ap {actionParameter ?? "none"}");
+            PluginLogger.Info($"RC ap {actionParameter ?? "none"}");
 
             var lightIpAddress = actionParameter;
 

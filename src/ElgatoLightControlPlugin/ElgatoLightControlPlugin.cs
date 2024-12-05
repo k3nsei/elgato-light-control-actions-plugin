@@ -1,8 +1,8 @@
 namespace Loupedeck.ElgatoLightControlPlugin
 {
-    using System;
-
     using ElgatoLightApiClient;
+
+    using Helpers;
 
     // This class contains the plugin-level logic of the Loupedeck plugin.
 
@@ -17,14 +17,14 @@ namespace Loupedeck.ElgatoLightControlPlugin
         // Initializes a new instance of the plugin class.
         public ElgatoLightControlPlugin()
         {
-            // Initialize the plugin log.
-            PluginLog.Init(this.Log);
+            // Initialize the plugin logger
+            PluginLogger.Init(this.Log);
 
             // Initialize the plugin resources.
             PluginResources.Init(this.Assembly);
 
             // Initialize the Elgato Light API client.
-            ElgatoLightApiClient.Init();
+            ElgatoLightApiClient.Init(PluginLogger.Instance);
         }
     }
 }

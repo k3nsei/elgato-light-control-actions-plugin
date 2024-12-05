@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElgatoLightControlPlugin", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElgatoLightApiClient", "ElgatoLightApiClient\ElgatoLightApiClient.csproj", "{864E16F6-C897-4E01-BCF5-D697F6D276BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{3A68DF1B-A163-4904-B8F9-EFE5FA55BC2C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{864E16F6-C897-4E01-BCF5-D697F6D276BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{864E16F6-C897-4E01-BCF5-D697F6D276BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{864E16F6-C897-4E01-BCF5-D697F6D276BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A68DF1B-A163-4904-B8F9-EFE5FA55BC2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A68DF1B-A163-4904-B8F9-EFE5FA55BC2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A68DF1B-A163-4904-B8F9-EFE5FA55BC2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A68DF1B-A163-4904-B8F9-EFE5FA55BC2C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

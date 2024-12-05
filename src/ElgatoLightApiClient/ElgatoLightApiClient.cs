@@ -6,12 +6,16 @@ namespace ElgatoLightApiClient
 
     using Services;
 
+    using Shared;
+
     using ValueObjects;
 
     public static class ElgatoLightApiClient
     {
-        public static void Init()
+        public static void Init(ILogger logger)
         {
+            Logger.Connect(logger);
+
             Dispatcher.RegisterHandler<LightStateQuery>(new LightStateQueryHandler());
             Dispatcher.RegisterHandler<SetPowerStateCommand>(new SetPowerStateCommandHandler());
             Dispatcher.RegisterHandler<SetBrightnessCommand>(new SetBrightnessCommandHandler());
