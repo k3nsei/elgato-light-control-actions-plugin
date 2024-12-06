@@ -1,6 +1,9 @@
 namespace Loupedeck.ElgatoLightControlPlugin
 {
+    using System.Security.Cryptography;
+
     using ElgatoLightApiClient;
+    using ElgatoLightApiClient.Services;
 
     using Helpers;
 
@@ -25,6 +28,15 @@ namespace Loupedeck.ElgatoLightControlPlugin
 
             // Initialize the Elgato Light API client.
             ElgatoLightApiClient.Init(PluginLogger.Instance);
+        }
+
+        public override void Load()
+        {
+            DeviceDiscovery.Discover();
+            DeviceDiscovery.DeviceDiscovered += (_, e) =>
+            {
+                PluginLogger.Verbose($"New device discovered: {e.Name}");
+            };
         }
     }
 }

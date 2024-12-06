@@ -352,6 +352,7 @@
       "elgatolightapiclient": {
         "type": "Project",
         "dependencies": {
+          "Makaretu.Dns.Multicast.New": "[0.38.0, )",
           "Shared": "[1.0.0, )",
           "System.Reactive": "[6.0.1, )"
         }

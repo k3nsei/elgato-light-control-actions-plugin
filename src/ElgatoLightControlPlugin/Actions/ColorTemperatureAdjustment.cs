@@ -39,10 +39,10 @@ namespace Loupedeck.ElgatoLightControlPlugin
         {
             base.OnLoad();
 
-            this._colorTemperatureSubject
-                .Throttle(TimeSpan.FromMilliseconds(25))
-                .DistinctUntilChanged()
-                .Subscribe(this.SetColorTemperature);
+            // this._colorTemperatureSubject
+            //     .Throttle(TimeSpan.FromMilliseconds(25))
+            //     .DistinctUntilChanged()
+            //     .Subscribe(this.SetColorTemperature);
 
             return true;
         }
