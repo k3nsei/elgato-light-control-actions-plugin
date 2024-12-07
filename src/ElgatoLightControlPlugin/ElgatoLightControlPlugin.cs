@@ -2,8 +2,8 @@ namespace Loupedeck.ElgatoLightControlPlugin
 {
     using System.Security.Cryptography;
 
-    using ElgatoLightApiClient;
-    using ElgatoLightApiClient.Services;
+    using ElgatoLightControl.ApiClient;
+    using ElgatoLightControl.ApiClient.Services;
 
     using Helpers;
 
@@ -27,7 +27,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
             PluginResources.Init(this.Assembly);
 
             // Initialize the Elgato Light API client.
-            ElgatoLightApiClient.Init(PluginLogger.Instance);
+            ApiClient.Init(PluginLogger.Instance);
         }
 
         public override void Load()

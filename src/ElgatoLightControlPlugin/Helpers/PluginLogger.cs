@@ -2,7 +2,7 @@ namespace Loupedeck.ElgatoLightControlPlugin.Helpers
 {
     using System;
 
-    using Shared;
+    using ElgatoLightControl.Shared;
 
     internal static class PluginLogger
     {

@@ -4,7 +4,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
 
-    using ElgatoLightApiClient;
+    using ElgatoLightControl.ApiClient;
 
     public class ColorTemperatureAdjustment() : PluginDynamicAdjustment(
         displayName: "Adjust color temperature",
@@ -51,7 +51,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
         {
             const String lightIpAddress = "192.168.0.11";
 
-            _ = Task.Run(() => ElgatoLightApiClient.SetColorTemperature(lightIpAddress, colorTemperature));
+            _ = Task.Run(() => ApiClient.SetColorTemperature(lightIpAddress, colorTemperature));
         }
     }
 }

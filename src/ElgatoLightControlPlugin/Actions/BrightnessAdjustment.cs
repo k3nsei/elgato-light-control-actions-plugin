@@ -6,7 +6,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
 
     using Constants;
 
-    using ElgatoLightApiClient;
+    using ElgatoLightControl.ApiClient;
 
     using Helpers;
 
@@ -97,7 +97,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
 
         private void SetBrightness(String lightIpAddress, Byte brightness)
         {
-            _ = Task.Run(() => ElgatoLightApiClient.SetBrightness(lightIpAddress, brightness));
+            _ = Task.Run(() => ApiClient.SetBrightness(lightIpAddress, brightness));
         }
     }
 }

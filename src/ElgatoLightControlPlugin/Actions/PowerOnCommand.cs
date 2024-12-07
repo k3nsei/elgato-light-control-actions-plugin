@@ -4,7 +4,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
 
     using Constants;
 
-    using ElgatoLightApiClient;
+    using ElgatoLightControl.ApiClient;
 
     public class PowerOnCommand : ActionEditorCommand
     {
@@ -27,7 +27,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
                 return base.RunCommand(actionParameters);
             }
 
-            _ = Task.Run(() => ElgatoLightApiClient.TurnOn(lightIpAddress));
+            _ = Task.Run(() => ApiClient.TurnOn(lightIpAddress));
 
             return true;
         }

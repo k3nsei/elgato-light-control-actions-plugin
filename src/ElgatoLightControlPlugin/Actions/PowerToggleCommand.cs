@@ -4,7 +4,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
 
     using Constants;
 
-    using ElgatoLightApiClient;
+    using ElgatoLightControl.ApiClient;
 
     public class PowerToggleCommand : MultistateActionEditorCommand
     {
@@ -33,7 +33,7 @@ namespace Loupedeck.ElgatoLightControlPlugin
             this.ToggleCurrentState(actionParameters);
 
             _ = Task.Run(() =>
-                ElgatoLightApiClient.SetPowerState(lightIpAddress,
+                ApiClient.SetPowerState(lightIpAddress,
                     this.GetCurrentState(actionParameters).DisplayName == PowerState.On)
             );
 
