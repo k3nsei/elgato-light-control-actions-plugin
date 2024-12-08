@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net8.0": {
+      "System.Reactive": {
+        "type": "Direct",
+        "requested": "[6.0.1, )",
+        "resolved": "6.0.1",
+        "contentHash": "rHaWtKDwCi9qJ3ObKo8LHPMuuwv33YbmQi7TcUK1C264V3MFnOr5Im7QgCTdLniztP3GJyeiSg5x8NqYJFqRmg=="
+      }
+    }
+  }
+}

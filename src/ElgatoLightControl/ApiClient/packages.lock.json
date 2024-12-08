@@ -350,7 +350,10 @@
         }
       },
       "elgatolightcontrol.shared": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "System.Reactive": "[6.0.1, )"
+        }
       }
     }
   }

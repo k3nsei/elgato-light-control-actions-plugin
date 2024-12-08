@@ -25,6 +25,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Makaretu.Dns.Multicast.New" Version="0.38.0"/>
         <PackageReference Include="System.Reactive" Version="6.0.1"/>
     </ItemGroup>
 
