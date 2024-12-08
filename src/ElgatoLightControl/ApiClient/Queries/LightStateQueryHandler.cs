@@ -10,7 +10,7 @@ namespace ElgatoLightControl.ApiClient.Queries
         {
             try
             {
-                var result = await ApiHttpClient.Instance.GetStateAsync(query.LightIpAddress, cancellationToken);
+                var result = await ApiHttpClient.GetStateAsync(query.LightIpAddress, cancellationToken);
 
                 return LightState.FromDto(result);
             }

@@ -5,5 +5,7 @@ namespace Loupedeck.ElgatoLightControlPlugin.Constants
         internal static readonly String Adjustments = "Adjustments";
 
         internal static readonly String PowerManagement = "Power Management";
+
+        internal static readonly String Switches = "Switches";
     }
 }

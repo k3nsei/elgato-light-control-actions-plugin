@@ -12,7 +12,7 @@ namespace ElgatoLightControl.ApiClient.Commands
                 command.LightIpAddress
             ));
 
-            return ApiHttpClient.Instance.SetBrightnessAsync(
+            return ApiHttpClient.SetBrightnessAsync(
                 command.LightIpAddress,
                 command.Brightness,
                 cancellationToken

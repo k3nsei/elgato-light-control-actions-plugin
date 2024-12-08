@@ -12,7 +12,7 @@ namespace ElgatoLightControl.ApiClient.Commands
                 command.LightIpAddress
             ));
 
-            return ApiHttpClient.Instance.SetPowerStateAsync(
+            return ApiHttpClient.SetPowerStateAsync(
                 command.LightIpAddress,
                 command.Enable,
                 cancellationToken
