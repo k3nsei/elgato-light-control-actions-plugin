@@ -39,6 +39,18 @@
         <ProjectReference Include="..\ElgatoLightControl\Shared\ElgatoLightControl.Shared.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Remove="images\Devices.png" />
+        <None Remove="images\LightbulbOff.png" />
+        <None Remove="images\LightbulbOn.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Images\Devices.png" />
+        <EmbeddedResource Include="Images\LightbulbOff.png" />
+        <EmbeddedResource Include="Images\LightbulbOn.png" />
+    </ItemGroup>
+
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <Exec Condition="$([MSBuild]::IsOSPlatform('Windows'))" Command="echo $(OutputPath) &gt; &quot;$(PluginDir)$(ProjectName).link&quot;"/>
         <Exec Condition="$([MSBuild]::IsOSPlatform('OSX'))" Command="echo $(OutputPath) &gt; $(PluginDir)$(ProjectName).link"/>

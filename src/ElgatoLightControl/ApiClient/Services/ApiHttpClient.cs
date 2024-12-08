@@ -8,19 +8,14 @@ namespace ElgatoLightControl.ApiClient.Services
 
     internal sealed class ApiHttpClient
     {
-        private static readonly Lazy<ApiHttpClient> _instance = new(() => new ApiHttpClient());
+        private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromSeconds(2) };
 
-        public static ApiHttpClient Instance => _instance.Value;
-
-        private readonly HttpClient _httpClient;
-
-        private ApiHttpClient() => this._httpClient = new HttpClient() { Timeout = TimeSpan.FromSeconds(2) };
-
-        internal async Task<LightStateDto> GetStateAsync(String lightIpAddress, CancellationToken cancellationToken)
+        internal static async Task<LightStateDto> GetStateAsync(String lightIpAddress,
+            CancellationToken cancellationToken)
         {
-            var baseUrl = LightIpAddressToBaseUrl(lightIpAddress);
+            var url = ComposeUrl(lightIpAddress, "/elgato/lights");
 
-            var response = await this._httpClient.GetAsync($"{baseUrl}/elgato/lights", cancellationToken);
+            var response = await HttpClient.GetAsync(url, cancellationToken);
 
             response.EnsureSuccessStatusCode();
 
@@ -30,18 +25,18 @@ namespace ElgatoLightControl.ApiClient.Services
             return data.Lights.Count > 0 ? data.Lights[0] : new LightStateDto();
         }
 
-        internal async Task<IEnumerable<LightStateDto>> GetStatesAsync(IEnumerable<String> lightIpAddresses,
+        internal static async Task<IEnumerable<LightStateDto>> GetStatesAsync(IEnumerable<String> lightIpAddresses,
             CancellationToken cancellationToken)
         {
-            var tasks = lightIpAddresses.Select(ip => this.GetStateAsync(ip, cancellationToken));
+            var tasks = lightIpAddresses.Select(ip => GetStateAsync(ip, cancellationToken));
 
             return await Task.WhenAll(tasks);
         }
 
-        internal async Task SetPowerStateAsync(String lightIpAddress, Boolean value,
+        internal static async Task SetPowerStateAsync(String lightIpAddress, Boolean value,
             CancellationToken cancellationToken)
         {
-            var baseUrl = LightIpAddressToBaseUrl(lightIpAddress);
+            var url = ComposeUrl(lightIpAddress, "/elgato/lights");
 
             var data = new SetPowerStateRequestDto(new[] { new LightPowerStateDto(value == true ? (Byte)1 : (Byte)0) }
                 .AsReadOnly());
@@ -49,29 +44,30 @@ namespace ElgatoLightControl.ApiClient.Services
             var content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
 
             var response =
-                await this._httpClient.PutAsync($"{baseUrl}/elgato/lights", content, cancellationToken);
+                await HttpClient.PutAsync(url, content, cancellationToken);
 
             response.EnsureSuccessStatusCode();
         }
 
-        internal async Task SetBrightnessAsync(String lightIpAddress, Byte value, CancellationToken cancellationToken)
+        internal static async Task SetBrightnessAsync(String lightIpAddress, Byte value,
+            CancellationToken cancellationToken)
         {
-            var baseUrl = LightIpAddressToBaseUrl(lightIpAddress);
+            var url = ComposeUrl(lightIpAddress, "/elgato/lights");
 
             var data = new SetBrightnessRequestDto(new[] { new LightBrightnessStateDto(value) }.AsReadOnly());
 
             var content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
 
             var response =
-                await this._httpClient.PutAsync($"{baseUrl}/elgato/lights", content, cancellationToken);
+                await HttpClient.PutAsync(url, content, cancellationToken);
 
             response.EnsureSuccessStatusCode();
         }
 
-        internal async Task SetColorTemperatureAsync(String lightIpAddress, UInt16 value,
+        internal static async Task SetColorTemperatureAsync(String lightIpAddress, UInt16 value,
             CancellationToken cancellationToken)
         {
-            var baseUrl = LightIpAddressToBaseUrl(lightIpAddress);
+            var url = ComposeUrl(lightIpAddress, "/elgato/lights");
 
             var data = new SetColorTemperatureRequestDto(
                 new[] { new LightColorTemperatureStateDto(value) }.AsReadOnly());
@@ -79,20 +75,24 @@ namespace ElgatoLightControl.ApiClient.Services
             var content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
 
             var response =
-                await this._httpClient.PutAsync($"{baseUrl}/elgato/lights", content, cancellationToken);
+                await HttpClient.PutAsync(url, content, cancellationToken);
 
             response.EnsureSuccessStatusCode();
         }
 
-        private static String LightIpAddressToBaseUrl(String lightIpAddress)
+        private static Uri ComposeUrl(String origin, String path, Int16 port = 9123)
         {
-            if (!IPAddress.TryParse(lightIpAddress, out _))
+            if (!IPAddress.TryParse(origin, out var ipAddress))
             {
-                throw new ArgumentException("Provided Elgato light address is not a valid IP address",
-                    nameof(lightIpAddress));
+                var ex = new ArgumentException("Provided Elgato light address is not a valid IP address",
+                    nameof(origin));
+
+                Logger.Error(ex.Message);
+
+                throw ex;
             }
 
-            return $"http://{lightIpAddress}:9123";
+            return new UriBuilder { Scheme = "http", Host = ipAddress.ToString(), Port = port, Path = path }.Uri;
         }
     }
 }

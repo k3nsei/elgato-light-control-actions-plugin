@@ -9,33 +9,39 @@ namespace ElgatoLightControl.ApiClient.Services
 
     public static class DeviceDiscovery
     {
-        private static readonly String Service = "_elg._tcp";
+        private static readonly String ServiceName = "_elg._tcp";
 
-        private static readonly Subject<Unit> ProbeSubject = new();
+        private static readonly Subject<Unit> DiscoverSubject = new();
 
         private static readonly Dictionary<String, IPAddress> Devices = new();
 
         public static EventHandler<DeviceDiscoveryEventArgs> DeviceDiscovered = delegate { };
 
-        public static void Discover() => ProbeSubject.OnNext(Unit.Default);
-
         static DeviceDiscovery()
         {
-            ProbeSubject
+            DiscoverSubject
                 .Throttle(TimeSpan.FromSeconds(5))
-                .SelectMany(_ => Observable.FromAsync(QueryDevices))
-                .Subscribe((_) => Logger.Verbose(String.Join(", ", Devices.Values)));
+                .SelectMany(_ => Observable.FromAsync(SendQuery))
+                .Subscribe();
         }
 
-        private static async Task QueryDevices()
+        public static void Discover() => DiscoverSubject.OnNext(Unit.Default);
+
+        private static void AddDevice(String deviceId, IPAddress ipAddress)
         {
-            using var mdns = new MulticastService();
-            using var sd = new ServiceDiscovery(mdns);
+            Devices.TryAdd(deviceId, ipAddress);
+
+            DeviceDiscovered?.Invoke(null, new DeviceDiscoveryEventArgs(deviceId, ipAddress));
+        }
+        
+        private static async Task SendQuery()
+        {
+            using MulticastService mdns = new();
+            using ServiceDiscovery sd = new(mdns);
+            using CancellationTokenSource cts = new(2000);
 
             mdns.NetworkInterfaceDiscovered += OnNetworkInterfaceDiscovered;
             sd.ServiceInstanceDiscovered += OnServiceInstanceDiscovered;
-
-            using var cts = new CancellationTokenSource(2000);
 
             try
             {
@@ -55,24 +61,26 @@ namespace ElgatoLightControl.ApiClient.Services
 
             void OnNetworkInterfaceDiscovered(Object sender, NetworkInterfaceEventArgs e)
             {
-                sd.QueryUnicastServiceInstances(Service);
+                sd.QueryUnicastServiceInstances(ServiceName);
             }
+        }
 
-            void OnServiceInstanceDiscovered(Object sender, ServiceInstanceDiscoveryEventArgs e)
+        private static void OnServiceInstanceDiscovered(Object sender, ServiceInstanceDiscoveryEventArgs e)
+        {
+            var deviceId = e.ServiceInstanceName.ToString();
+
+            if (!deviceId.EndsWith($"{ServiceName}.local"))
             {
-                var name = e.ServiceInstanceName.ToString();
-                var ipAddresses = e.RemoteEndPoint.Address;
-
-                Devices.TryAdd(name, ipAddresses);
-
-                DeviceDiscovered?.Invoke(null, new DeviceDiscoveryEventArgs(name, ipAddresses));
+                return;
             }
+
+            AddDevice(deviceId, e.RemoteEndPoint.Address);
         }
     }
 
-    public class DeviceDiscoveryEventArgs(String name, IPAddress ipAddress) : EventArgs
+    public class DeviceDiscoveryEventArgs(String deviceId, IPAddress ipAddress) : EventArgs
     {
-        public readonly String Name = name;
+        public readonly String DeviceId = deviceId;
         public readonly IPAddress IpAddress = ipAddress;
     }
 }

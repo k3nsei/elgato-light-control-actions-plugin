@@ -12,7 +12,7 @@ namespace ElgatoLightControl.ApiClient.Commands
                 command.LightIpAddress
             ));
 
-            return ApiHttpClient.Instance.SetColorTemperatureAsync(
+            return ApiHttpClient.SetColorTemperatureAsync(
                 command.LightIpAddress,
                 command.ColorTemperature,
                 cancellationToken
