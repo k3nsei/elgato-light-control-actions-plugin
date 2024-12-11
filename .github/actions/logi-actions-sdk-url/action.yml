@@ -1,0 +1,13 @@
+name: Get Plugin SDK Tools Download URL
+description: GitHub Action to retrieve the direct download URL for the Plugin SDK Tools
+branding:
+  icon: external-link
+  color: blue
+outputs:
+  url:
+    description: The direct download URL for the Plugin SDK Tools
+  sha:
+    description: The SHA256 hash of the Plugin SDK Tools download URL
+runs:
+  using: node20
+  main: dist/index.js

@@ -32,18 +32,22 @@ jobs:
           cache: true
           cache-dependency-path: src/**/packages.lock.json
 
+      - name: Get Plugin SDK Tools URL
+        id: plugin-sdk-tools-url
+        uses: ./.github/actions/logi-actions-sdk-url
+
       - name: Cache Plugin SDK Tools
         id: plugin-sdk-tools-cache
         uses: actions/cache@v4
         with:
           path: ./tools/LogiPluginSdkTools
-          key: plugin-sdk-tools-${{ runner.os }}-${{ hashFiles('./tools/install-sdk.ps1') }}
-          restore-keys: plugin-sdk-tools-${{ runner.os }}-
+          key: plugin-sdk-tools-${{ runner.os }}-${{ hashFiles('./tools/install-sdk.ps1') }}-${{ steps.plugin-sdk-tools-url.outputs.sha }}
+          restore-keys: plugin-sdk-tools-${{ runner.os }}-${{ hashFiles('./tools/install-sdk.ps1') }}-
 
       - name: Setup Plugin SDK Tools
         if: ${{ steps.plugin-sdk-tools-cache.outputs.cache-hit != 'true' }}
         shell: pwsh
-        run: .\\tools\\install-sdk.ps1
+        run: .\\tools\\install-sdk.ps1 -SdkUrl "${{ steps.plugin-sdk-tools-url.outputs.url }}"
 
       - name: Build plugin
         shell: pwsh

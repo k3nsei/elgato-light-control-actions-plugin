@@ -1,0 +1,30 @@
+{
+  "name": "download-logi-actions-sdk",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm rimraf ./dist && pnpm ncc build src/index.ts --target es2022 -o dist",
+    "format": "prettier -wu ./src action.yml package.json tsconfig.json"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "jsdom": "^25.0.1"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.10.2",
+    "@vercel/ncc": "^0.38.3",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
+    "typescript": "~5.7.2"
+  },
+  "module": "dist/index.js",
+  "exports": {
+    "./package.json": {
+      "default": "./dist/package.json"
+    },
+    ".": {
+      "default": "./dist/index.js"
+    }
+  }
+}
