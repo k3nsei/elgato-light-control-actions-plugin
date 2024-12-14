@@ -1,4 +1,3 @@
-namespace ElgatoLightControl.ApiClient.Commands
-{
-    internal record SetPowerStateCommand(String LightIpAddress, Boolean Enable) : ICommand;
-}
+namespace ElgatoLightControl.ApiClient.Commands;
+
+internal record SetPowerStateCommand(string LightIpAddress, bool Enable) : ICommand;

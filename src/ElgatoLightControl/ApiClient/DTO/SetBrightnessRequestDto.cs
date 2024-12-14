@@ -1,8 +1,7 @@
-namespace ElgatoLightControl.ApiClient.DTO
-{
-    using System.Text.Json.Serialization;
+namespace ElgatoLightControl.ApiClient.DTO;
 
-    internal record SetBrightnessRequestDto(
-        [property: JsonPropertyName("lights")] IReadOnlyList<LightBrightnessStateDto> Lights = null
-    );
-}
+using System.Text.Json.Serialization;
+
+internal record SetBrightnessRequestDto(
+	[property: JsonPropertyName("lights")] IReadOnlyList<LightBrightnessStateDto> Lights = null
+);

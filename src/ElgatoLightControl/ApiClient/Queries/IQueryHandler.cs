@@ -1,8 +1,7 @@
-namespace ElgatoLightControl.ApiClient.Queries
+namespace ElgatoLightControl.ApiClient.Queries;
+
+internal interface IQueryHandler<in TQuery, TResult>
+	where TQuery : IQuery<TResult>
 {
-    internal interface IQueryHandler<in TQuery, TResult>
-        where TQuery : IQuery<TResult>
-    {
-        public Task<TResult> Handle(TQuery query, CancellationToken cancellationToken);
-    }
+	public Task<TResult> Handle(TQuery query, CancellationToken cancellationToken);
 }

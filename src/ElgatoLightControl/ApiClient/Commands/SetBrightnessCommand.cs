@@ -1,4 +1,6 @@
-namespace ElgatoLightControl.ApiClient.Commands
-{
-    internal record SetBrightnessCommand(String LightIpAddress, Byte Brightness) : ICommand;
-}
+namespace ElgatoLightControl.ApiClient.Commands;
+
+internal record SetBrightnessCommand(
+	string LightIpAddress,
+	byte Brightness
+) : ICommand;

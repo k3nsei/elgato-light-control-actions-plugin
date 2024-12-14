@@ -2,5 +2,5 @@
 
 public static class SettingName
 {
-    public static String KnownDevices => "KnownDevices";
+	public static string KnownDevices => "KnownDevices";
 }

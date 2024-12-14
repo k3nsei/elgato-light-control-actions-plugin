@@ -1,111 +1,110 @@
-﻿namespace Loupedeck.ElgatoLightControlPlugin.Helpers
+﻿namespace Loupedeck.ElgatoLightControlPlugin.Helpers;
+
+using System.Net;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Runtime.Serialization;
+using System.Text.Json;
+
+using Constants;
+
+using ElgatoLightControl.ApiClient.Services;
+
+using IDeviceCollection = IReadOnlyCollection<(string DeviceId, System.Net.IPAddress IPAddress)>;
+
+public static class PluginDeviceManager
 {
-    using System.Net;
-    using System.Reactive;
-    using System.Reactive.Linq;
-    using System.Reactive.Subjects;
-    using System.Runtime.Serialization;
-    using System.Text.Json;
+	private static readonly Dictionary<string, IPAddress> DevicesDict = new();
 
-    using Constants;
+	private static readonly Subject<Unit> DeviceDiscoveredSubject = new();
 
-    using ElgatoLightControl.ApiClient.Services;
+	public static EventHandler<DeviceListChangedEventArgs> DeviceListChanged = delegate { };
 
-    using IDeviceCollection = IReadOnlyCollection<(String DeviceId, System.Net.IPAddress IPAddress)>;
+	public static IDeviceCollection Devices =>
+		DevicesDict.Select(x => (x.Key, x.Value)).ToList().AsReadOnly();
 
-    public static class PluginDeviceManager
-    {
-        private static readonly Dictionary<String, IPAddress> DevicesDict = new();
+	public static void Init()
+	{
+		DeviceDiscoveredSubject
+			.Throttle(TimeSpan.FromMilliseconds(100))
+			.Subscribe(_ =>
+			{
+				SaveKnownDevices();
 
-        private static readonly Subject<Unit> DeviceDiscoveredSubject = new();
+				DeviceListChanged.Invoke(null, new DeviceListChangedEventArgs(Devices));
+			});
+	}
 
-        public static EventHandler<DeviceListChangedEventArgs> DeviceListChanged = delegate { };
+	public static void OnLoad()
+	{
+		Restore();
 
-        public static void Init()
-        {
-            DeviceDiscoveredSubject
-                .Throttle(TimeSpan.FromMilliseconds(100))
-                .Subscribe(_ =>
-                {
-                    SaveKnownDevices();
+		Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(30))
+			.Subscribe(_ => DeviceDiscovery.Discover());
 
-                    DeviceListChanged.Invoke(null, new DeviceListChangedEventArgs(Devices));
-                });
-        }
+		DeviceDiscovery.DeviceDiscovered += (_, e) => AddDevice(e.DeviceId, e.IpAddress);
+	}
 
-        public static void OnLoad()
-        {
-            Restore();
+	public static void OnUnload()
+	{
+		// Add any necessary cleanup code here
+	}
 
-            Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(30))
-                .Subscribe(_ => DeviceDiscovery.Discover());
+	private static void AddDevice(string deviceId, IPAddress ipAddress)
+	{
+		DevicesDict.TryAdd(deviceId, ipAddress);
+		DeviceDiscoveredSubject.OnNext(Unit.Default);
+	}
 
-            DeviceDiscovery.DeviceDiscovered += (_, e) => AddDevice(e.DeviceId, e.IpAddress);
-        }
+	private static void Restore()
+	{
+		foreach (var (deviceId, ipAddress) in ReadKnownDevices())
+		{
+			AddDevice(deviceId, ipAddress);
+		}
+	}
 
-        public static void OnUnload()
-        {
-            // Add any necessary cleanup code here
-        }
+	private static List<(string DeviceId, IPAddress IPAddress)> ReadKnownDevices()
+	{
+		try
+		{
+			var data = PluginKeyValueStore.Get(SettingName.KnownDevices);
 
-        public static IDeviceCollection Devices =>
-            DevicesDict.Select(x => (x.Key, x.Value)).ToList().AsReadOnly();
+			if (!string.IsNullOrWhiteSpace(data))
+			{
+				return JsonSerializer.Deserialize<List<List<string>>>(data)
+					.Select(x => (x[0], IPAddress.Parse(x[1])))
+					.ToList();
+			}
+		}
+		catch (Exception ex)
+		{
+			var errorMessage = ex switch
+			{
+				SerializationException => "Serialization error of stored known devices",
+				_ => "Unexpected error while reading known devices"
+			};
 
-        private static void AddDevice(String deviceId, IPAddress ipAddress)
-        {
-            DevicesDict.TryAdd(deviceId, ipAddress);
-            DeviceDiscoveredSubject.OnNext(Unit.Default);
-        }
+			PluginLogger.Error(ex, errorMessage);
+		}
 
-        private static void Restore()
-        {
-            foreach (var (deviceId, ipAddress) in ReadKnownDevices())
-            {
-                AddDevice(deviceId, ipAddress);
-            }
-        }
+		return [];
+	}
 
-        private static List<(String DeviceId, IPAddress IPAddress)> ReadKnownDevices()
-        {
-            try
-            {
-                var data = PluginKeyValueStore.Get(SettingName.KnownDevices);
+	private static void SaveKnownDevices()
+	{
+		var devices = DevicesDict.Select(
+			x => new List<string> { x.Key, x.Value.ToString() }
+		);
 
-                if (!String.IsNullOrWhiteSpace(data))
-                {
-                    return JsonSerializer.Deserialize<List<List<String>>>(data)
-                        .Select(x => (x[0], IPAddress.Parse(x[1])))
-                        .ToList();
-                }
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = ex switch
-                {
-                    SerializationException => "Serialization error of stored known devices",
-                    _ => "Unexpected error while reading known devices"
-                };
+		var value = JsonSerializer.Serialize(devices);
 
-                PluginLogger.Error(ex, errorMessage);
-            }
+		PluginKeyValueStore.Set(SettingName.KnownDevices, value);
+	}
+}
 
-            return [];
-        }
-
-        private static void SaveKnownDevices()
-        {
-            var devices = DevicesDict.Select(
-                x => new List<String> { x.Key, x.Value.ToString() }
-            );
-
-            var value = JsonSerializer.Serialize(devices);
-
-            PluginKeyValueStore.Set(SettingName.KnownDevices, value);
-        }
-    }
-
-    public class DeviceListChangedEventArgs(IDeviceCollection devices) : EventArgs
-    {
-        public readonly IDeviceCollection Devices = devices;
-    }
+public class DeviceListChangedEventArgs(IDeviceCollection devices) : EventArgs
+{
+	public readonly IDeviceCollection Devices = devices;
 }

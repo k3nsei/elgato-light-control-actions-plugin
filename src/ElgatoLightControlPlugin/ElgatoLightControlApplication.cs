@@ -1,6 +1,5 @@
-namespace Loupedeck.ElgatoLightControlPlugin
+namespace Loupedeck.ElgatoLightControlPlugin;
+
+public class ElgatoLightControlApplication : ClientApplication
 {
-    public class ElgatoLightControlApplication : ClientApplication
-    {
-    }
 }

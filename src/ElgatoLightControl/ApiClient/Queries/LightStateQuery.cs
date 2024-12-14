@@ -1,6 +1,5 @@
-namespace ElgatoLightControl.ApiClient.Queries
-{
-    using ValueObjects;
+namespace ElgatoLightControl.ApiClient.Queries;
 
-    internal record LightStateQuery(String LightIpAddress) : IQuery<LightState>;
-}
+using ValueObjects;
+
+internal record LightStateQuery(string LightIpAddress) : IQuery<LightState>;

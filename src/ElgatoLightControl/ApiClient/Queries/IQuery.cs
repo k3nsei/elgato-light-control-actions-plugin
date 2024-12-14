@@ -1,4 +1,5 @@
-namespace ElgatoLightControl.ApiClient.Queries
+namespace ElgatoLightControl.ApiClient.Queries;
+
+internal interface IQuery<out TResult>
 {
-    internal interface IQuery<out TResult> { }
 }

@@ -1,6 +1,9 @@
-namespace ElgatoLightControl.ApiClient.Commands
-{
-    internal interface ICommand { }
+namespace ElgatoLightControl.ApiClient.Commands;
 
-    internal interface ICommand<out TResult> { }
+internal interface ICommand
+{
+}
+
+internal interface ICommand<out TResult>
+{
 }

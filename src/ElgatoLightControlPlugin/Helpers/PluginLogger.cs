@@ -1,56 +1,53 @@
-namespace Loupedeck.ElgatoLightControlPlugin.Helpers
+namespace Loupedeck.ElgatoLightControlPlugin.Helpers;
+
+using ElgatoLightControl.Shared;
+
+internal static class PluginLogger
 {
-    using System;
+	internal static ILogger Instance { get; private set; }
 
-    using ElgatoLightControl.Shared;
+	internal static void Init(PluginLogFile pluginLogFile) => Instance ??= new Logger(pluginLogFile);
 
-    internal static class PluginLogger
-    {
-        internal static ILogger Instance { get; private set; }
+	public static void Verbose(string text) => Instance?.Verbose(text);
 
-        internal static void Init(PluginLogFile pluginLogFile) => Instance ??= new Logger(pluginLogFile);
+	public static void Verbose(Exception ex, string text) => Instance?.Verbose(ex, text);
 
-        public static void Verbose(String text) => Instance?.Verbose(text);
+	public static void Info(string text) => Instance?.Info(text);
 
-        public static void Verbose(Exception ex, String text) => Instance?.Verbose(ex, text);
+	public static void Info(Exception ex, string text) => Instance?.Info(ex, text);
 
-        public static void Info(String text) => Instance?.Info(text);
+	public static void Warning(string text) => Instance?.Warning(text);
 
-        public static void Info(Exception ex, String text) => Instance?.Info(ex, text);
+	public static void Warning(Exception ex, string text) => Instance?.Warning(ex, text);
 
-        public static void Warning(String text) => Instance?.Warning(text);
+	public static void Error(string text) => Instance?.Error(text);
 
-        public static void Warning(Exception ex, String text) => Instance?.Warning(ex, text);
+	public static void Error(Exception ex, string text) => Instance?.Error(ex, text);
 
-        public static void Error(String text) => Instance?.Error(text);
+	private class Logger : ILogger
+	{
+		private readonly PluginLogFile _pluginLogFile;
 
-        public static void Error(Exception ex, String text) => Instance?.Error(ex, text);
+		public Logger(PluginLogFile pluginLogFile)
+		{
+			pluginLogFile.CheckNullArgument(nameof(pluginLogFile));
+			this._pluginLogFile = pluginLogFile;
+		}
 
-        private class Logger : ILogger
-        {
-            private readonly PluginLogFile _pluginLogFile;
+		void ILogger.Verbose(string text) => this._pluginLogFile?.Verbose(text);
 
-            public Logger(PluginLogFile pluginLogFile)
-            {
-                pluginLogFile.CheckNullArgument(nameof(pluginLogFile));
-                this._pluginLogFile = pluginLogFile;
-            }
+		void ILogger.Verbose(Exception ex, string text) => this._pluginLogFile?.Verbose(ex, text);
 
-            void ILogger.Verbose(String text) => this._pluginLogFile?.Verbose(text);
+		void ILogger.Info(string text) => this._pluginLogFile?.Info(text);
 
-            void ILogger.Verbose(Exception ex, String text) => this._pluginLogFile?.Verbose(ex, text);
+		void ILogger.Info(Exception ex, string text) => this._pluginLogFile?.Info(ex, text);
 
-            void ILogger.Info(String text) => this._pluginLogFile?.Info(text);
+		void ILogger.Warning(string text) => this._pluginLogFile?.Warning(text);
 
-            void ILogger.Info(Exception ex, String text) => this._pluginLogFile?.Info(ex, text);
+		void ILogger.Warning(Exception ex, string text) => this._pluginLogFile?.Warning(ex, text);
 
-            void ILogger.Warning(String text) => this._pluginLogFile?.Warning(text);
+		void ILogger.Error(string text) => this._pluginLogFile?.Error(text);
 
-            void ILogger.Warning(Exception ex, String text) => this._pluginLogFile?.Warning(ex, text);
-
-            void ILogger.Error(String text) => this._pluginLogFile?.Error(text);
-
-            void ILogger.Error(Exception ex, String text) => this._pluginLogFile?.Error(ex, text);
-        }
-    }
+		void ILogger.Error(Exception ex, string text) => this._pluginLogFile?.Error(ex, text);
+	}
 }

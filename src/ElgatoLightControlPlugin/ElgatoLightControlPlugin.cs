@@ -1,43 +1,42 @@
-namespace Loupedeck.ElgatoLightControlPlugin
+namespace Loupedeck.ElgatoLightControlPlugin;
+
+using ElgatoLightControl.ApiClient;
+
+using Helpers;
+
+public class ElgatoLightControlPlugin : Plugin
 {
-    using ElgatoLightControl.ApiClient;
+	public static readonly string PluginName = "ElgatoLightControl";
 
-    using Helpers;
+	public ElgatoLightControlPlugin()
+	{
+		// Initialize the plugin logger
+		PluginLogger.Init(this.Log);
 
-    public class ElgatoLightControlPlugin : Plugin
-    {
-        public static readonly String PluginName = "ElgatoLightControl";
+		// Initialize the plugin key-value store
+		PluginKeyValueStore.Init(
+			this.TryGetPluginSetting,
+			this.SetPluginSetting,
+			this.DeletePluginSetting
+		);
 
-        // Gets a value indicating whether this is an API-only plugin.
-        public override Boolean UsesApplicationApiOnly => true;
+		// Initialize the plugin device manager
+		PluginDeviceManager.Init();
 
-        // Gets a value indicating whether this is a Universal plugin or an Application plugin.
-        public override Boolean HasNoApplication => true;
+		// Initialize the Elgato Light API client
+		ApiClient.Init(PluginLogger.Instance);
 
-        public ElgatoLightControlPlugin()
-        {
-            // Initialize the plugin logger
-            PluginLogger.Init(this.Log);
+		// Initialize the plugin resources
+		PluginResources.Init(this.Assembly);
+	}
 
-            // Initialize the plugin key-value store
-            PluginKeyValueStore.Init(
-                this.TryGetPluginSetting,
-                this.SetPluginSetting,
-                this.DeletePluginSetting
-            );
+	// Gets a value indicating whether this is an API-only plugin.
+	public override bool UsesApplicationApiOnly => true;
 
-            // Initialize the plugin device manager
-            PluginDeviceManager.Init();
+	// Gets a value indicating whether this is a Universal plugin or an Application plugin.
+	public override bool HasNoApplication => true;
 
-            // Initialize the Elgato Light API client
-            ApiClient.Init(PluginLogger.Instance);
+	public override void Load() => PluginDeviceManager.OnLoad();
 
-            // Initialize the plugin resources
-            PluginResources.Init(this.Assembly);
-        }
-
-        public override void Load() => PluginDeviceManager.OnLoad();
-
-        public override void Unload() => PluginDeviceManager.OnUnload();
-    }
+	public override void Unload() => PluginDeviceManager.OnUnload();
 }

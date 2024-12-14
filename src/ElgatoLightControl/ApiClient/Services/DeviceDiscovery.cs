@@ -1,86 +1,85 @@
-namespace ElgatoLightControl.ApiClient.Services
+namespace ElgatoLightControl.ApiClient.Services;
+
+using System.Net;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+
+using Makaretu.Dns;
+
+public static class DeviceDiscovery
 {
-    using System.Net;
-    using System.Reactive;
-    using System.Reactive.Linq;
-    using System.Reactive.Subjects;
+	private static readonly string ServiceName = "_elg._tcp";
 
-    using Makaretu.Dns;
+	private static readonly Subject<Unit> DiscoverSubject = new();
 
-    public static class DeviceDiscovery
-    {
-        private static readonly String ServiceName = "_elg._tcp";
+	private static readonly Dictionary<string, IPAddress> Devices = new();
 
-        private static readonly Subject<Unit> DiscoverSubject = new();
+	public static EventHandler<DeviceDiscoveryEventArgs> DeviceDiscovered = delegate { };
 
-        private static readonly Dictionary<String, IPAddress> Devices = new();
+	static DeviceDiscovery()
+	{
+		DiscoverSubject
+			.Throttle(TimeSpan.FromSeconds(5))
+			.SelectMany(_ => Observable.FromAsync(SendQuery))
+			.Subscribe();
+	}
 
-        public static EventHandler<DeviceDiscoveryEventArgs> DeviceDiscovered = delegate { };
+	public static void Discover() => DiscoverSubject.OnNext(Unit.Default);
 
-        static DeviceDiscovery()
-        {
-            DiscoverSubject
-                .Throttle(TimeSpan.FromSeconds(5))
-                .SelectMany(_ => Observable.FromAsync(SendQuery))
-                .Subscribe();
-        }
+	private static void AddDevice(string deviceId, IPAddress ipAddress)
+	{
+		Devices.TryAdd(deviceId, ipAddress);
 
-        public static void Discover() => DiscoverSubject.OnNext(Unit.Default);
+		DeviceDiscovered?.Invoke(null, new DeviceDiscoveryEventArgs(deviceId, ipAddress));
+	}
 
-        private static void AddDevice(String deviceId, IPAddress ipAddress)
-        {
-            Devices.TryAdd(deviceId, ipAddress);
+	private static async Task SendQuery()
+	{
+		using MulticastService mdns = new();
+		using ServiceDiscovery sd = new(mdns);
+		using CancellationTokenSource cts = new(2000);
 
-            DeviceDiscovered?.Invoke(null, new DeviceDiscoveryEventArgs(deviceId, ipAddress));
-        }
-        
-        private static async Task SendQuery()
-        {
-            using MulticastService mdns = new();
-            using ServiceDiscovery sd = new(mdns);
-            using CancellationTokenSource cts = new(2000);
+		mdns.NetworkInterfaceDiscovered += OnNetworkInterfaceDiscovered;
+		sd.ServiceInstanceDiscovered += OnServiceInstanceDiscovered;
 
-            mdns.NetworkInterfaceDiscovered += OnNetworkInterfaceDiscovered;
-            sd.ServiceInstanceDiscovered += OnServiceInstanceDiscovered;
+		try
+		{
+			mdns.Start();
+			await Task.Delay(2000, cts.Token).ConfigureAwait(false);
+		}
+		catch (TaskCanceledException)
+		{
+			// Task was canceled after 2 seconds
+		}
+		finally
+		{
+			mdns.Stop();
+		}
 
-            try
-            {
-                mdns.Start();
-                await Task.Delay(2000, cts.Token).ConfigureAwait(false);
-            }
-            catch (TaskCanceledException)
-            {
-                // Task was canceled after 2 seconds
-            }
-            finally
-            {
-                mdns.Stop();
-            }
+		return;
 
-            return;
+		void OnNetworkInterfaceDiscovered(object sender, NetworkInterfaceEventArgs e)
+		{
+			sd.QueryUnicastServiceInstances(ServiceName);
+		}
+	}
 
-            void OnNetworkInterfaceDiscovered(Object sender, NetworkInterfaceEventArgs e)
-            {
-                sd.QueryUnicastServiceInstances(ServiceName);
-            }
-        }
+	private static void OnServiceInstanceDiscovered(object sender, ServiceInstanceDiscoveryEventArgs e)
+	{
+		var deviceId = e.ServiceInstanceName.ToString();
 
-        private static void OnServiceInstanceDiscovered(Object sender, ServiceInstanceDiscoveryEventArgs e)
-        {
-            var deviceId = e.ServiceInstanceName.ToString();
+		if (!deviceId.EndsWith($"{ServiceName}.local"))
+		{
+			return;
+		}
 
-            if (!deviceId.EndsWith($"{ServiceName}.local"))
-            {
-                return;
-            }
+		AddDevice(deviceId, e.RemoteEndPoint.Address);
+	}
+}
 
-            AddDevice(deviceId, e.RemoteEndPoint.Address);
-        }
-    }
-
-    public class DeviceDiscoveryEventArgs(String deviceId, IPAddress ipAddress) : EventArgs
-    {
-        public readonly String DeviceId = deviceId;
-        public readonly IPAddress IpAddress = ipAddress;
-    }
+public class DeviceDiscoveryEventArgs(string deviceId, IPAddress ipAddress) : EventArgs
+{
+	public readonly string DeviceId = deviceId;
+	public readonly IPAddress IpAddress = ipAddress;
 }

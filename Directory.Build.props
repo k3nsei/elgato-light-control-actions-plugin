@@ -1,7 +1,12 @@
 <Project>
-    <PropertyGroup>
-        <LangVersion>latest</LangVersion>
-        <BaseIntermediateOutputPath>$(SolutionDir)obj\</BaseIntermediateOutputPath>
-        <BaseOutputPath>$(SolutionDir)bin\</BaseOutputPath>
-    </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <BaseIntermediateOutputPath>$(SolutionDir)obj\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(SolutionDir)bin\</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Makaretu.Dns.Multicast.New" Version="0.38.0"/>
+    <PackageReference Include="System.Reactive" Version="6.0.1"/>
+  </ItemGroup>
 </Project>

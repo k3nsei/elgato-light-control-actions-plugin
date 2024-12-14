@@ -1,4 +1,3 @@
-namespace ElgatoLightControl.ApiClient.Commands
-{
-    internal record SetColorTemperatureCommand(String LightIpAddress, UInt16 ColorTemperature) : ICommand;
-}
+namespace ElgatoLightControl.ApiClient.Commands;
+
+internal record SetColorTemperatureCommand(string LightIpAddress, ushort ColorTemperature) : ICommand;
