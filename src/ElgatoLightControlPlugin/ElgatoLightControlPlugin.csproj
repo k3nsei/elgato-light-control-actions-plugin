@@ -36,15 +36,31 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="images\Devices.png"/>
-    <None Remove="images\LightbulbOff.png"/>
-    <None Remove="images\LightbulbOn.png"/>
+    <None Remove="Images\BrightnessFolder.png"/>
+    <None Remove="Images\BrightnessFolder.svg"/>
+    <None Remove="Images\Devices.png"/>
+    <None Remove="Images\LightbulbFolder.png"/>
+    <None Remove="Images\LightbulbFolder.svg"/>
+    <None Remove="Images\LightbulbOff.png"/>
+    <None Remove="Images\LightbulbOn.png"/>
+    <None Remove="Images\LightbulbGroupOff.png"/>
+    <None Remove="Images\LightbulbGroupOn.png"/>
+    <None Remove="Images\TemperatureFolder.png"/>
+    <None Remove="Images\TemperatureFolder.svg"/>
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Images\BrightnessFolder.png"/>
+    <EmbeddedResource Include="Images\BrightnessFolder.svg"/>
     <EmbeddedResource Include="Images\Devices.png"/>
+    <EmbeddedResource Include="Images\LightbulbFolder.png"/>
+    <EmbeddedResource Include="Images\LightbulbFolder.svg"/>
     <EmbeddedResource Include="Images\LightbulbOff.png"/>
     <EmbeddedResource Include="Images\LightbulbOn.png"/>
+    <EmbeddedResource Include="Images\LightbulbGroupOff.png"/>
+    <EmbeddedResource Include="Images\LightbulbGroupOn.png"/>
+    <EmbeddedResource Include="Images\TemperatureFolder.png"/>
+    <EmbeddedResource Include="Images\TemperatureFolder.svg"/>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

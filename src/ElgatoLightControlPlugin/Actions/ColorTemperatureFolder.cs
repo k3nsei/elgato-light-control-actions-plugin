@@ -21,7 +21,7 @@ public class ColorTemperatureFolder : PluginDynamicFolder
 		PluginDynamicFolderNavigation.ButtonArea;
 
 	public override BitmapImage GetButtonImage(PluginImageSize imageSize) =>
-		EmbeddedResources.ReadImage(ImageId.Devices);
+		FolderImage.ToImage(ImageId.TemperatureFolder, imageSize);
 
 	public override IEnumerable<string> GetButtonPressActionNames(DeviceType deviceType)
 	{

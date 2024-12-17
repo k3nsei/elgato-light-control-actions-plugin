@@ -21,7 +21,7 @@ public class BrightnessFolder : PluginDynamicFolder
 		PluginDynamicFolderNavigation.ButtonArea;
 
 	public override BitmapImage GetButtonImage(PluginImageSize imageSize) =>
-		EmbeddedResources.ReadImage(ImageId.Devices);
+		FolderImage.ToImage(ImageId.BrightnessFolder, imageSize);
 
 	public override IEnumerable<string> GetButtonPressActionNames(DeviceType deviceType)
 	{

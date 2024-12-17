@@ -8,6 +8,8 @@ using Helpers;
 
 public class PowerToggleFolder : PluginDynamicFolder
 {
+	private static readonly string AllLights = "__ALL__";
+
 	private readonly Dictionary<string, (string Name, bool PowerState)> _state = new();
 
 	public PowerToggleFolder()
@@ -20,7 +22,7 @@ public class PowerToggleFolder : PluginDynamicFolder
 		PluginDynamicFolderNavigation.ButtonArea;
 
 	public override BitmapImage GetButtonImage(PluginImageSize imageSize) =>
-		EmbeddedResources.ReadImage(ImageId.Devices);
+		FolderImage.ToImage(ImageId.LightbulbFolder, imageSize);
 
 	public override IEnumerable<string> GetButtonPressActionNames(DeviceType deviceType)
 	{
@@ -34,7 +36,14 @@ public class PowerToggleFolder : PluginDynamicFolder
 			this._state[ipAddress] = (light.DeviceId, powerState);
 
 			return this.CreateCommandName(ipAddress);
-		});
+		}).ToList();
+
+		if (actions.Count > 0)
+		{
+			this._state[AllLights] = ("Toggle All", false);
+
+			actions.Insert(0, this.CreateCommandName(AllLights));
+		}
 
 		return new[] { NavigateUpActionName }.Union(actions);
 	}
@@ -47,10 +56,24 @@ public class PowerToggleFolder : PluginDynamicFolder
 			return;
 		}
 
+		if (actionParameter == NavigateUpActionName)
+		{
+			base.RunCommand(actionParameter);
+			return;
+		}
+
 		var currentPowerState = this._state.TryGetValue(actionParameter, out var state) && state.PowerState;
 		var nextPowerState = !currentPowerState;
 
 		this._state[actionParameter] = state with { PowerState = nextPowerState };
+
+		if (actionParameter == AllLights)
+		{
+			this._state
+				.Where(entry => entry.Key != AllLights).ToList()
+				.ForEach(entry => this.RunCommand(entry.Key));
+			return;
+		}
 
 		this.CommandImageChanged(actionParameter);
 
@@ -80,8 +103,12 @@ public class PowerToggleFolder : PluginDynamicFolder
 
 		var (name, image) = this._state.TryGetValue(actionParameter, out var state)
 			? (state.Name, state.PowerState
-				? EmbeddedResources.ReadImage(ImageId.LightbulbOn)
-				: EmbeddedResources.ReadImage(ImageId.LightbulbOff)
+				? actionParameter == AllLights
+					? EmbeddedResources.ReadImage(ImageId.LightbulbGroupOn)
+					: EmbeddedResources.ReadImage(ImageId.LightbulbOn)
+				: actionParameter == AllLights
+					? EmbeddedResources.ReadImage(ImageId.LightbulbGroupOff)
+					: EmbeddedResources.ReadImage(ImageId.LightbulbOff)
 			)
 			: ("", null);
 
