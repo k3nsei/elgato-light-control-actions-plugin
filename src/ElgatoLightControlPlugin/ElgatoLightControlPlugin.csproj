@@ -38,7 +38,6 @@
   <ItemGroup>
     <None Remove="Images\BrightnessFolder.png"/>
     <None Remove="Images\BrightnessFolder.svg"/>
-    <None Remove="Images\Devices.png"/>
     <None Remove="Images\LightbulbFolder.png"/>
     <None Remove="Images\LightbulbFolder.svg"/>
     <None Remove="Images\LightbulbOff.png"/>
@@ -52,7 +51,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Images\BrightnessFolder.png"/>
     <EmbeddedResource Include="Images\BrightnessFolder.svg"/>
-    <EmbeddedResource Include="Images\Devices.png"/>
     <EmbeddedResource Include="Images\LightbulbFolder.png"/>
     <EmbeddedResource Include="Images\LightbulbFolder.svg"/>
     <EmbeddedResource Include="Images\LightbulbOff.png"/>
