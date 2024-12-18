@@ -5,7 +5,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
-using Makaretu.Dns;
+using Zeroconf;
 
 public static class DeviceDiscovery
 {
@@ -27,54 +27,22 @@ public static class DeviceDiscovery
 
 	public static void Discover() => DiscoverSubject.OnNext(Unit.Default);
 
-	private static void AddDevice(string deviceId, IPAddress ipAddress)
+	private static void AddDevice(string id, string ip)
 	{
-		Devices.TryAdd(deviceId, ipAddress);
-
-		DeviceDiscovered?.Invoke(null, new DeviceDiscoveryEventArgs(deviceId, ipAddress));
+		if (IPAddress.TryParse(ip, out var ipAddress) && Devices.TryAdd(id, ipAddress))
+		{
+			DeviceDiscovered?.Invoke(null, new DeviceDiscoveryEventArgs(id, ipAddress));
+		}
 	}
 
 	private static async Task SendQuery()
 	{
-		using MulticastService mdns = new();
-		using ServiceDiscovery sd = new(mdns);
-		using CancellationTokenSource cts = new(2000);
+		var hosts = await ZeroconfResolver.ResolveAsync($"{ServiceName}.local.");
 
-		mdns.NetworkInterfaceDiscovered += OnNetworkInterfaceDiscovered;
-		sd.ServiceInstanceDiscovered += OnServiceInstanceDiscovered;
-
-		try
+		foreach (var host in hosts)
 		{
-			mdns.Start();
-			await Task.Delay(2000, cts.Token).ConfigureAwait(false);
+			AddDevice(host.Id, host.IPAddress);
 		}
-		catch (TaskCanceledException)
-		{
-			// Task was canceled after 2 seconds
-		}
-		finally
-		{
-			mdns.Stop();
-		}
-
-		return;
-
-		void OnNetworkInterfaceDiscovered(object sender, NetworkInterfaceEventArgs e)
-		{
-			sd.QueryUnicastServiceInstances(ServiceName);
-		}
-	}
-
-	private static void OnServiceInstanceDiscovered(object sender, ServiceInstanceDiscoveryEventArgs e)
-	{
-		var deviceId = e.ServiceInstanceName.ToString();
-
-		if (!deviceId.EndsWith($"{ServiceName}.local"))
-		{
-			return;
-		}
-
-		AddDevice(deviceId, e.RemoteEndPoint.Address);
 	}
 }
 

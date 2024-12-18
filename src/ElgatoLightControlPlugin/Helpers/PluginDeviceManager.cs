@@ -40,7 +40,7 @@ public static class PluginDeviceManager
 	{
 		Restore();
 
-		Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(30))
+		Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(60))
 			.Subscribe(_ => DeviceDiscovery.Discover());
 
 		DeviceDiscovery.DeviceDiscovered += (_, e) => AddDevice(e.DeviceId, e.IpAddress);
