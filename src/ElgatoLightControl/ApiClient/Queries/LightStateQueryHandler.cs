@@ -10,9 +10,9 @@ internal class LightStateQueryHandler : IQueryHandler<LightStateQuery, LightStat
 	{
 		try
 		{
-			var result = await ApiHttpClient.GetStateAsync(query.LightIpAddress, cancellationToken);
+			var dto = await ApiHttpClient.GetLightStateAsync(query.IpAddress, cancellationToken);
 
-			return LightState.FromDto(result);
+			return LightState.FromDto(dto);
 		}
 		catch
 		{

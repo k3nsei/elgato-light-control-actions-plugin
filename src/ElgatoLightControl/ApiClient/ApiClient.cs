@@ -23,6 +23,7 @@ public static class ApiClient
 	{
 		Logger.Connect(logger);
 
+		Dispatcher.RegisterHandler<LightInfoQuery>(new LightInfoQueryHandler());
 		Dispatcher.RegisterHandler<LightStateQuery>(new LightStateQueryHandler());
 
 		CreateInvokeCommandObservable(
@@ -47,17 +48,20 @@ public static class ApiClient
 		).Subscribe();
 	}
 
-	public static Task<LightState> GetState(string lightIpAddress) =>
-		Dispatcher.Query<LightStateQuery, LightState>(new LightStateQuery(lightIpAddress));
+	public static Task<LightInfo> GetLightInfo(string ipAddress) =>
+		Dispatcher.Query<LightInfoQuery, LightInfo>(new LightInfoQuery(ipAddress));
 
-	public static void TurnOn(string lightIpAddress) =>
-		SetPowerState(lightIpAddress, true);
+	public static Task<LightState> GetLightState(string ipAddress) =>
+		Dispatcher.Query<LightStateQuery, LightState>(new LightStateQuery(ipAddress));
 
-	public static void TurnOff(string lightIpAddress) =>
-		SetPowerState(lightIpAddress, false);
+	public static void TurnOn(string ipAddress) =>
+		SetPowerState(ipAddress, true);
 
-	public static void SetPowerState(string lightIpAddress, bool enable) =>
-		PowerStateSubject.OnNext((lightIpAddress, enable));
+	public static void TurnOff(string ipAddress) =>
+		SetPowerState(ipAddress, false);
+
+	public static void SetPowerState(string ipAddress, bool enable) =>
+		PowerStateSubject.OnNext((ipAddress, enable));
 
 	public static void SetBrightness(string ipAddress, byte brightness) =>
 		BrightnessSubject.OnNext((ipAddress, brightness));
