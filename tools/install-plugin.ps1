@@ -1,32 +1,38 @@
 #!/usr/bin/env pwsh
 
-# Define the path to the Downloads directory and the Temp directory
-$downloadsPath = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads')
-$tempPath = [System.IO.Path]::GetTempPath()
+$pkgPath = [System.IO.Path]::Combine($env:USERPROFILE, 'Downloads', 'ElgatoLightControlPlugin.zip')
+$tmpDir = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [guid]::NewGuid().ToString())
+$outDir = [System.IO.Path]::Combine($tmpDir, 'ElgatoLightControlPlugin')
 
-# Define the path to the zip file and the destination directory
-$zipFilePath = [System.IO.Path]::Combine($downloadsPath, 'ElgatoLightControlPlugin.zip')
-$tempExtractionPath = [System.IO.Path]::Combine($tempPath, 'ElgatoLightControlPlugin')
-
-# Create the temp extraction directory if it doesn't exist
-if (-not (Test-Path -Path $tempExtractionPath)) {
-    New-Item -ItemType Directory -Path $tempExtractionPath | Out-Null
+$cleanup = {
+  Remove-Item -Recurse -Force -Path $tmpDir
 }
 
-# Extract the zip file to the temp extraction directory
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-[System.IO.Compression.ZipFile]::ExtractToDirectory($zipFilePath, $tempExtractionPath)
+try {
+  if (-not (Test-Path -Path $outDir)) {
+    New-Item -ItemType Directory -Path $outDir | Out-Null
+  }
 
-# Define the path to the .lplug4 file and the final destination directory
-$lplug4FilePath = [System.IO.Path]::Combine($tempExtractionPath, 'ElgatoLightControlPlugin.lplug4')
-$finalDestinationPath = [System.IO.Path]::Combine($env:LOCALAPPDATA, 'Logi', 'LogiPluginService', 'Plugins', 'ElgatoLightControl')
+  Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-# Create the final destination directory if it doesn't exist
-if (-not (Test-Path -Path $finalDestinationPath)) {
-    New-Item -ItemType Directory -Path $finalDestinationPath | Out-Null
+  [System.IO.Compression.ZipFile]::ExtractToDirectory($pkgPath, $outDir)
+
+  $plgPath = [System.IO.Path]::Combine($outDir, 'ElgatoLightControlPlugin.lplug4')
+  $dstDir = [System.IO.Path]::Combine($env:LOCALAPPDATA, 'Logi', 'LogiPluginService', 'Plugins', 'ElgatoLightControl')
+
+  if (-not (Test-Path -Path $dstDir)) {
+    New-Item -ItemType Directory -Path $dstDir | Out-Null
+  }
+
+  if ((Get-ChildItem -Path $dstDir | Measure-Object).Count -gt 0) {
+    Remove-Item -Recurse -Force -Path (Get-ChildItem -Path $dstDir).FullName
+  }
+
+  [System.IO.Compression.ZipFile]::ExtractToDirectory($plgPath, $dstDir)
+
+  Write-Output "Plugin installation complete."
+  Write-Output "The plugin has been installed to: $dstDir"
 }
-
-# Extract the .lplug4 file to the final destination directory
-[System.IO.Compression.ZipFile]::ExtractToDirectory($lplug4FilePath, $finalDestinationPath)
-
-Write-Output "Extraction complete. Files extracted to: $finalDestinationPath"
+finally {
+  & $cleanup
+}
