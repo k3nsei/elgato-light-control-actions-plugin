@@ -1,0 +1,36 @@
+version: 2
+updates:
+  - package-ecosystem: 'github-actions'
+    target-branch: 'main'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      timezone: 'Europe/Warsaw'
+      day: 'saturday'
+      time: '06:00'
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: 'ci'
+      include: 'scope'
+    groups:
+      dotnet:
+        patterns:
+          - '*'
+
+  - package-ecosystem: 'nuget'
+    target-branch: 'main'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      timezone: 'Europe/Warsaw'
+      day: 'saturday'
+      time: '06:00'
+    open-pull-requests-limit: 25
+    commit-message:
+      prefix: 'chore'
+      prefix-development: 'chore'
+      include: 'scope'
+    groups:
+      dotnet:
+        patterns:
+          - '*'
