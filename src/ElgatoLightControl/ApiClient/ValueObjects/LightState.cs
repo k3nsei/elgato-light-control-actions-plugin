@@ -2,6 +2,12 @@ namespace ElgatoLightControl.ApiClient.ValueObjects;
 
 using DTO;
 
+using TLightState = (
+	bool PowerState,
+	byte Brightness,
+	ushort ColorTemperature
+	);
+
 public readonly struct LightState(byte? powerState, byte? brightness, ushort? colorTemperature)
 {
 	private PowerState PowerState { get; } = new(powerState);
@@ -10,13 +16,17 @@ public readonly struct LightState(byte? powerState, byte? brightness, ushort? co
 
 	private ColorTemperature ColorTemperature { get; } = new(colorTemperature);
 
-	internal static LightState Empty => new();
+	public static LightState Empty => new(0, 25, 143);
 
 	internal static LightState FromDto(LightStateDto dto) =>
 		new(dto.On, dto.Brightness, dto.Temperature);
 
-	public (PowerState PowerState, Brightness Brightness, ColorTemperature ColorTemperature) Value =>
-		(this.PowerState, this.Brightness, this.ColorTemperature);
+	public TLightState Value =>
+	(
+		this.PowerState.IsEnabled,
+		this.Brightness.Value,
+		this.ColorTemperature.Value
+	);
 
 	public override string ToString() =>
 		"LightState( " +

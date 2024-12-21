@@ -2,19 +2,11 @@ namespace ElgatoLightControl.ApiClient.ValueObjects;
 
 using Helpers;
 
-public readonly struct ColorTemperature
+public readonly struct ColorTemperature(ushort? value)
 {
-	public ushort Value { get; init; }
+	public ushort Value { get; } = Math.Clamp(value ?? 143, (ushort)143, (ushort)344);
 
-	public ushort Kelvin { get; init; }
+	private ushort Kelvin => TemperatureConverter.MiredToKelvin(this.Value);
 
-	public ColorTemperature(ushort? value)
-	{
-		this.Value = Math.Clamp(value ?? 143, (ushort)143, (ushort)344);
-		this.Kelvin = TemperatureConverter.MiredsToKelvin(this.Value);
-	}
-
-	public override string ToString() => $"{this.Value} mireds";
-
-	// public override String ToString() => $"{this.Kelvin.ToString()}K";
+	public override string ToString() => $"{this.Kelvin}K";
 }

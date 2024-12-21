@@ -15,6 +15,19 @@ public class BrightnessFolder : PluginDynamicFolder
 		this.DisplayName = "Brightness";
 		this.Description = "Adjust the brightness of your lights";
 		this.GroupName = ActionGroupName.Adjustments;
+
+		PluginDeviceManager.DevicesObservable.Subscribe(devices =>
+		{
+			foreach (var entry in devices)
+			{
+				var key = entry.IpAddress.ToString();
+
+				this._state[key] = (entry.LightInfo.Value.DisplayName, entry.LightState.Value.Brightness);
+
+				this.AdjustmentValueChanged(key);
+				this.AdjustmentImageChanged(key);
+			}
+		});
 	}
 
 	public override PluginDynamicFolderNavigation GetNavigationArea(DeviceType deviceType) =>
@@ -25,17 +38,7 @@ public class BrightnessFolder : PluginDynamicFolder
 
 	public override IEnumerable<string> GetButtonPressActionNames(DeviceType deviceType)
 	{
-		var lights = PluginDeviceManager.Devices;
-
-		var actions = lights.Select(light =>
-		{
-			var ipAddress = light.IPAddress.ToString();
-			var brightness = this._state.TryGetValue(ipAddress, out var state) ? state.Brightness : (byte)0;
-
-			this._state[ipAddress] = (light.DeviceId, brightness);
-
-			return this.CreateAdjustmentName(ipAddress);
-		});
+		var actions = this._state.Keys.Select(this.CreateAdjustmentName);
 
 		return new[] { NavigateUpActionName }.Union(actions);
 	}
@@ -54,7 +57,7 @@ public class BrightnessFolder : PluginDynamicFolder
 
 		this.AdjustmentImageChanged(actionParameter);
 
-		SetBrightness(actionParameter, next);
+		ApiClient.SetBrightness(actionParameter, next);
 	}
 
 	public override string GetAdjustmentDisplayName(string actionParameter, PluginImageSize imageSize)
@@ -78,34 +81,6 @@ public class BrightnessFolder : PluginDynamicFolder
 
 		var brightness = this._state.TryGetValue(actionParameter, out var state) ? state.Brightness : (byte)0;
 
-		using var bitmapBuilder = new BitmapBuilder(imageSize);
-
-		var size = Math.Min(bitmapBuilder.Width, bitmapBuilder.Height);
-		var alpha = (byte)Math.Round(150 + brightness / 100f * (255 - 150));
-
-		bitmapBuilder.FillRectangle(
-			0,
-			0,
-			bitmapBuilder.Width,
-			bitmapBuilder.Height,
-			BitmapColor.Black
-		);
-
-		bitmapBuilder.FillCircle(
-			size * .5f,
-			size * .5f,
-			size * .5f,
-			new BitmapColor(255, 255, 255, alpha)
-		);
-
-		bitmapBuilder.DrawText(
-			$"{brightness}%",
-			BitmapColor.Black
-		);
-
-		return bitmapBuilder.ToImage();
+		return BrightnessImage.ToImage(brightness, imageSize);
 	}
-
-	private static void SetBrightness(string ipAddress, byte brightness) =>
-		ApiClient.SetBrightness(ipAddress, brightness);
 }

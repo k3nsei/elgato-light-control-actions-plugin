@@ -2,58 +2,75 @@
 
 using DTO;
 
-public readonly struct LightInfo
+using TLightInfo = (
+	string ProductName,
+	string DisplayName,
+	string SerialNumber,
+	string MacAddress,
+	string HardwareRevision,
+	ushort HardwareBoardType,
+	string FirmwareVersion,
+	ushort FirmwareBuildNumber,
+	IReadOnlyList<string> Features
+	);
+
+public readonly struct LightInfo(
+	string? productName,
+	string? displayName,
+	string? serialNumber,
+	string? macAddress,
+	string? hardwareRevision,
+	ushort? hardwareBoardType,
+	string? firmwareVersion,
+	ushort? firmwareBuildNumber,
+	IReadOnlyList<string>? features
+)
 {
-	private string ProductName { get; init; }
+	private string ProductName { get; } = productName ?? string.Empty;
 
-	private string DisplayName { get; init; }
+	private string DisplayName { get; } = displayName ?? string.Empty;
 
-	private string SerialNumber { get; init; }
+	private string SerialNumber { get; } = serialNumber ?? string.Empty;
 
-	private string MacAddress { get; init; }
+	private string MacAddress { get; } = macAddress ?? string.Empty;
 
-	private string HardwareRevision { get; init; }
+	private string HardwareRevision { get; } = hardwareRevision ?? string.Empty;
 
-	private ushort HardwareBoardType { get; init; }
+	private ushort HardwareBoardType { get; } = hardwareBoardType ?? 0;
 
-	private string FirmwareVersion { get; init; }
+	private string FirmwareVersion { get; } = firmwareVersion ?? string.Empty;
 
-	private ushort FirmwareBuildNumber { get; init; }
+	private ushort FirmwareBuildNumber { get; } = firmwareBuildNumber ?? 0;
 
-	private IReadOnlyList<string> Features { get; init; }
+	private IReadOnlyList<string> Features { get; } = features ?? Array.Empty<string>();
 
-	public static LightInfo Empty => new()
-	{
-		ProductName = string.Empty,
-		DisplayName = string.Empty,
-		SerialNumber = string.Empty,
-		MacAddress = string.Empty,
-		HardwareRevision = string.Empty,
-		HardwareBoardType = 0,
-		FirmwareVersion = string.Empty,
-		FirmwareBuildNumber = 0,
-		Features = Array.Empty<string>()
-	};
+	public static LightInfo Empty => new();
 
-	public static LightInfo FromDto(LightInfoResponseDto dto) =>
-		new()
-		{
-			ProductName = dto.ProductName,
-			DisplayName = dto.DisplayName,
-			SerialNumber = dto.SerialNumber,
-			MacAddress = dto.MacAddress,
-			HardwareRevision = dto.HardwareRevision,
-			HardwareBoardType = dto.HardwareBoardType,
-			FirmwareVersion = dto.FirmwareVersion,
-			FirmwareBuildNumber = dto.FirmwareBuildNumber,
-			Features = dto.Features
-		};
+	internal static LightInfo FromDto(LightInfoResponseDto dto) =>
+		new(
+			dto.ProductName,
+			dto.DisplayName,
+			dto.SerialNumber,
+			dto.MacAddress,
+			dto.HardwareRevision,
+			dto.HardwareBoardType,
+			dto.FirmwareVersion,
+			dto.FirmwareBuildNumber,
+			dto.Features
+		);
 
-	public (string ProductName, string DisplayName, string SerialNumber, string MacAddress, string
-		HardwareRevision, ushort HardwareBoardType, string FirmwareVersion, ushort FirmwareBuildNumber,
-		IReadOnlyList<string> Features) Value =>
-		(this.ProductName, this.DisplayName, this.SerialNumber, this.MacAddress, this.HardwareRevision,
-			this.HardwareBoardType, this.FirmwareVersion, this.FirmwareBuildNumber, this.Features);
+	public TLightInfo Value =>
+	(
+		this.ProductName,
+		this.DisplayName,
+		this.SerialNumber,
+		this.MacAddress,
+		this.HardwareRevision,
+		this.HardwareBoardType,
+		this.FirmwareVersion,
+		this.FirmwareBuildNumber,
+		this.Features
+	);
 
 	public override string ToString() =>
 		"LightInfo( " +

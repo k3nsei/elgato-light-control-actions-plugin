@@ -1,53 +1,52 @@
 namespace ElgatoLightControl.ApiClient.Services;
 
-using System.Net;
-using System.Reactive;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 using Zeroconf;
 
-public static class DeviceDiscovery
+public class DeviceDiscovery : IDisposable
 {
-	private static readonly string ServiceName = "_elg._tcp";
+	private static readonly string ServiceName = "_elg._tcp.local.";
 
-	private static readonly Subject<Unit> DiscoverSubject = new();
+	private IDisposable? _subscription;
 
-	private static readonly Dictionary<string, IPAddress> Devices = new();
-
-	public static EventHandler<DeviceDiscoveryEventArgs> DeviceDiscovered = delegate { };
-
-	static DeviceDiscovery()
+	public void Dispose()
 	{
-		DiscoverSubject
-			.Throttle(TimeSpan.FromSeconds(5))
-			.SelectMany(_ => Observable.FromAsync(SendQuery))
+		this.Stop();
+
+		GC.SuppressFinalize(this);
+	}
+
+	public event EventHandler<DeviceDiscoveredEventArgs> DeviceDiscovered = delegate { };
+
+	public void Start() => this.Start(TimeSpan.FromMinutes(5));
+
+	public void Start(TimeSpan interval) =>
+		this._subscription = Observable.Timer(TimeSpan.Zero, interval)
+			.SelectMany(_ => Observable.FromAsync(this.SendQuery))
 			.Subscribe();
-	}
 
-	public static void Discover() => DiscoverSubject.OnNext(Unit.Default);
+	public void Stop() => this._subscription?.Dispose();
 
-	private static void AddDevice(string id, string ip)
+	private async Task SendQuery(CancellationToken cancellationToken)
 	{
-		if (IPAddress.TryParse(ip, out var ipAddress) && Devices.TryAdd(id, ipAddress))
-		{
-			DeviceDiscovered?.Invoke(null, new DeviceDiscoveryEventArgs(id, ipAddress));
-		}
-	}
+		Logger.Verbose($"Sending query for {ServiceName}");
 
-	private static async Task SendQuery()
-	{
-		var hosts = await ZeroconfResolver.ResolveAsync($"{ServiceName}.local.");
+		await ZeroconfResolver.ResolveAsync(
+			ServiceName,
+			callback: host =>
+			{
+				Logger.Verbose($"Discovered device: {host.DisplayName} at {host.IPAddress}");
 
-		foreach (var host in hosts)
-		{
-			AddDevice(host.Id, host.IPAddress);
-		}
+				this.DeviceDiscovered?.Invoke(this, new DeviceDiscoveredEventArgs(host.DisplayName, host.IPAddress));
+			},
+			cancellationToken: cancellationToken
+		);
 	}
 }
 
-public class DeviceDiscoveryEventArgs(string deviceId, IPAddress ipAddress) : EventArgs
+public class DeviceDiscoveredEventArgs(string deviceId, string ipAddress) : EventArgs
 {
 	public readonly string DeviceId = deviceId;
-	public readonly IPAddress IpAddress = ipAddress;
+	public readonly string IpAddress = ipAddress;
 }

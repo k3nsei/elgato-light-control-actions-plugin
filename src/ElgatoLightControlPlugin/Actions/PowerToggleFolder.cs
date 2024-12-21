@@ -15,7 +15,21 @@ public class PowerToggleFolder : PluginDynamicFolder
 	public PowerToggleFolder()
 	{
 		this.DisplayName = "Power Toggle";
+		this.Description = "Toggle the power state of your lights";
 		this.GroupName = ActionGroupName.PowerManagement;
+
+		PluginDeviceManager.DevicesObservable.Subscribe(devices =>
+		{
+			foreach (var entry in devices)
+			{
+				var key = entry.IpAddress.ToString();
+
+				this._state[key] = (entry.LightInfo.Value.DisplayName, entry.LightState.Value.PowerState);
+
+				this.AdjustmentValueChanged(key);
+				this.AdjustmentImageChanged(key);
+			}
+		});
 	}
 
 	public override PluginDynamicFolderNavigation GetNavigationArea(DeviceType deviceType) =>
@@ -26,17 +40,7 @@ public class PowerToggleFolder : PluginDynamicFolder
 
 	public override IEnumerable<string> GetButtonPressActionNames(DeviceType deviceType)
 	{
-		var lights = PluginDeviceManager.Devices;
-
-		var actions = lights.Select(light =>
-		{
-			var ipAddress = light.IPAddress.ToString();
-			var powerState = this._state.TryGetValue(ipAddress, out var state) && state.PowerState;
-
-			this._state[ipAddress] = (light.DeviceId, powerState);
-
-			return this.CreateCommandName(ipAddress);
-		}).ToList();
+		var actions = this._state.Keys.Select(this.CreateCommandName).ToList();
 
 		if (actions.Count > 0)
 		{
