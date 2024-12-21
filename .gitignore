@@ -10,6 +10,9 @@
 *.userosscache
 *.sln.docstates
 
+# User-specific files (Debugger)
+!src/ElgatoLightControlPlugin/ElgatoLightControlPlugin.csproj.user
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
