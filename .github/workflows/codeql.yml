@@ -1,5 +1,9 @@
 name: "CodeQL Advanced"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [ "main" ]
@@ -11,7 +15,7 @@ on:
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: windows-latest
+    runs-on: ${{ (matrix.language == 'csharp' && 'windows-latest') || 'ubuntu-latest' }}
     permissions:
       security-events: write
       packages: read
@@ -21,21 +25,48 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - language: csharp
-          build-mode: autobuild
-        - language: javascript-typescript
-          build-mode: none
+          - language: csharp
+            build-mode: autobuild
+          - language: javascript-typescript
+            build-mode: none
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        build-mode: ${{ matrix.build-mode }}
+      - name: Setup DotNet SDK
+        if: ${{ matrix.language == 'csharp' }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          cache: true
+          cache-dependency-path: src/**/packages.lock.json
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
+      - name: Get Plugin SDK Tools URL
+        if: ${{ matrix.language == 'csharp' }}
+        id: plugin-sdk-tools-url
+        uses: ./.github/actions/logi-actions-sdk-url
+
+      - name: Cache Plugin SDK Tools
+        if: ${{ matrix.language == 'csharp' }}
+        id: plugin-sdk-tools-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ./tools/LogiPluginSdkTools
+          key: plugin-sdk-tools-${{ runner.os }}-${{ hashFiles('./tools/install-sdk.ps1') }}-${{ steps.plugin-sdk-tools-url.outputs.sha }}
+          restore-keys: plugin-sdk-tools-${{ runner.os }}-${{ hashFiles('./tools/install-sdk.ps1') }}-
+
+      - name: Setup Plugin SDK Tools
+        if: ${{ matrix.language == 'csharp' && steps.plugin-sdk-tools-cache.outputs.cache-hit != 'true' }}
+        shell: pwsh
+        run: .\\tools\\install-sdk.ps1 -SdkUrl "${{ steps.plugin-sdk-tools-url.outputs.url }}"
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
