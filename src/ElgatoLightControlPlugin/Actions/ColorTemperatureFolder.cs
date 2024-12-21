@@ -6,6 +6,7 @@ using ElgatoLightControl.ApiClient;
 using ElgatoLightControl.ApiClient.Helpers;
 
 using Helpers;
+using Helpers.Images;
 
 public class ColorTemperatureFolder : PluginDynamicFolder
 {

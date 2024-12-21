@@ -5,6 +5,7 @@ using Constants;
 using ElgatoLightControl.ApiClient;
 
 using Helpers;
+using Helpers.Images;
 
 public class BrightnessFolder : PluginDynamicFolder
 {

@@ -1,6 +1,6 @@
-namespace Loupedeck.ElgatoLightControlPlugin.Helpers;
+namespace Loupedeck.ElgatoLightControlPlugin.Helpers.Images;
 
-public static class BrightnessImage
+internal static class BrightnessImage
 {
 	internal static BitmapImage ToImage(byte brightness, PluginImageSize imageSize)
 	{

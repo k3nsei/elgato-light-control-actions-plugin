@@ -1,4 +1,4 @@
-namespace Loupedeck.ElgatoLightControlPlugin.Helpers;
+namespace Loupedeck.ElgatoLightControlPlugin.Helpers.Images;
 
 internal static class FolderImage
 {

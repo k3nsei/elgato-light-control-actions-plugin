@@ -79,7 +79,12 @@ public static class PluginDeviceManager
 	private static List<TDeviceEntry> MergeDeviceEntryLists(
 		List<TDeviceEntry> prev,
 		List<TDeviceEntry> curr
-	) => prev?.Concat(curr).DistinctBy(entry => entry.DeviceId).ToList() ?? curr;
+	) => prev?
+		     .Concat(curr)
+		     .DistinctBy(entry => entry.DeviceId)
+		     .OrderBy(entry => entry.LightInfo.Value.DisplayName)
+		     .ToList()
+	     ?? curr;
 
 	private static void Restore() =>
 		ReadKnownDevices()

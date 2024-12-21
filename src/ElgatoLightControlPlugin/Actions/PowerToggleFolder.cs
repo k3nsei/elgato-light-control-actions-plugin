@@ -5,10 +5,11 @@ using Constants;
 using ElgatoLightControl.ApiClient;
 
 using Helpers;
+using Helpers.Images;
 
 public class PowerToggleFolder : PluginDynamicFolder
 {
-	private static readonly string AllLights = "__ALL__";
+	private const string AllLights = "__ALL__";
 
 	private readonly Dictionary<string, (string Name, bool PowerState)> _state = new();
 
@@ -99,43 +100,19 @@ public class PowerToggleFolder : PluginDynamicFolder
 			return base.GetCommandImage(actionParameter, imageSize);
 		}
 
-		using var bitmapBuilder = new BitmapBuilder(imageSize);
-
-		var (name, image) =
+		var (name, type) =
 			actionParameter == AllLights
 				? this._state.Values.Any(x => x.PowerState)
-					? ("All lights", EmbeddedResources.ReadImage(ImageId.LightbulbGroupOn))
-					: ("All lights", EmbeddedResources.ReadImage(ImageId.LightbulbGroupOff))
+					? ("All lights", PowerToggleImage.AllLightsOn)
+					: ("All lights", PowerToggleImage.AllLightsOff)
 				: this._state.TryGetValue(actionParameter, out var state)
 					? (state.Name, state.PowerState
-						? EmbeddedResources.ReadImage(ImageId.LightbulbOn)
-						: EmbeddedResources.ReadImage(ImageId.LightbulbOff)
+						? PowerToggleImage.LightOn
+						: PowerToggleImage.LightOff
 					)
 					: ("", null);
 
-		if (image is not null)
-		{
-			bitmapBuilder.DrawImage(
-				image,
-				(int)(bitmapBuilder.Width * .15),
-				0,
-				(int)(bitmapBuilder.Width * .7),
-				(int)(bitmapBuilder.Height * .7)
-			);
-		}
-
-		if (!string.IsNullOrWhiteSpace(name))
-		{
-			bitmapBuilder.DrawText(
-				name,
-				0,
-				(int)(bitmapBuilder.Height * .25),
-				bitmapBuilder.Width,
-				bitmapBuilder.Height
-			);
-		}
-
-		return bitmapBuilder.ToImage();
+		return PowerToggleImage.ToImage(name, type, imageSize);
 	}
 
 	private void ToggleAllLights()

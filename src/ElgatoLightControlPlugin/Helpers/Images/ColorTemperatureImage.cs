@@ -1,10 +1,10 @@
-namespace Loupedeck.ElgatoLightControlPlugin.Helpers;
+namespace Loupedeck.ElgatoLightControlPlugin.Helpers.Images;
 
 using ElgatoLightControl.ApiClient.Helpers;
 
-public static class ColorTemperatureImage
+internal static class ColorTemperatureImage
 {
-	public static BitmapImage ToImage(ushort mired, PluginImageSize imageSize)
+	internal static BitmapImage ToImage(ushort mired, PluginImageSize imageSize)
 	{
 		var kelvin = TemperatureConverter.MiredToKelvin(mired);
 
