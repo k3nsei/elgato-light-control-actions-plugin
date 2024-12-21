@@ -16,7 +16,7 @@ public class PowerToggleFolder : PluginDynamicFolder
 	{
 		this.DisplayName = "Power Toggle";
 		this.Description = "Toggle the power state of your lights";
-		this.GroupName = ActionGroupName.PowerManagement;
+		this.GroupName = string.Join(ActionGroupName.Separator, "Folders", ActionGroupName.PowerManagement);
 
 		PluginDeviceManager.DevicesObservable.Subscribe(devices =>
 		{

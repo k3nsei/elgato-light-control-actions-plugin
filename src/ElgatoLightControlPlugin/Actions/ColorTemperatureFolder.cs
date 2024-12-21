@@ -15,7 +15,7 @@ public class ColorTemperatureFolder : PluginDynamicFolder
 	{
 		this.DisplayName = "Color Temperature";
 		this.Description = "Adjust the color temperature of your lights";
-		this.GroupName = ActionGroupName.Adjustments;
+		this.GroupName = string.Join(ActionGroupName.Separator, "Folders", ActionGroupName.Adjustments);
 
 		PluginDeviceManager.DevicesObservable.Subscribe(devices =>
 		{

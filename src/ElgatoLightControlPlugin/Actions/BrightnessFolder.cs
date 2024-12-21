@@ -14,7 +14,7 @@ public class BrightnessFolder : PluginDynamicFolder
 	{
 		this.DisplayName = "Brightness";
 		this.Description = "Adjust the brightness of your lights";
-		this.GroupName = ActionGroupName.Adjustments;
+		this.GroupName = string.Join(ActionGroupName.Separator, "Folders", ActionGroupName.Adjustments);
 
 		PluginDeviceManager.DevicesObservable.Subscribe(devices =>
 		{
