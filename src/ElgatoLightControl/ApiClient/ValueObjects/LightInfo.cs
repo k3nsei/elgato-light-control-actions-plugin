@@ -26,19 +26,19 @@ public readonly struct LightInfo(
 	IReadOnlyList<string>? features
 )
 {
-	private string ProductName { get; } = productName ?? string.Empty;
+	private string ProductName { get; } = productName ?? "Unknown";
 
-	private string DisplayName { get; } = displayName ?? string.Empty;
+	private string DisplayName { get; } = displayName ?? "Elgato Unknown Light";
 
-	private string SerialNumber { get; } = serialNumber ?? string.Empty;
+	private string SerialNumber { get; } = serialNumber ?? "";
 
-	private string MacAddress { get; } = macAddress ?? string.Empty;
+	private string MacAddress { get; } = macAddress ?? "00:00:00:00:00:00";
 
-	private string HardwareRevision { get; } = hardwareRevision ?? string.Empty;
+	private string HardwareRevision { get; } = hardwareRevision ?? "0.0";
 
 	private ushort HardwareBoardType { get; } = hardwareBoardType ?? 0;
 
-	private string FirmwareVersion { get; } = firmwareVersion ?? string.Empty;
+	private string FirmwareVersion { get; } = firmwareVersion ?? "0.0.0";
 
 	private ushort FirmwareBuildNumber { get; } = firmwareBuildNumber ?? 0;
 

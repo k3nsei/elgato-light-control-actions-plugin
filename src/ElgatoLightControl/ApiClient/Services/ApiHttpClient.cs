@@ -16,14 +16,14 @@ internal static class ApiHttpClient
 	)
 	{
 		var url = ComposeUrl(ipAddress, "/elgato/accessory-info");
-
 		var response = await HttpClient.GetAsync(url, cancellationToken);
 
 		response.EnsureSuccessStatusCode();
 
 		var content = await response.Content.ReadAsStringAsync(cancellationToken);
+		var data = JsonSerializer.Deserialize<LightInfoResponseDto>(content);
 
-		return JsonSerializer.Deserialize<LightInfoResponseDto>(content);
+		return data ?? new LightInfoResponseDto();
 	}
 
 	internal static async Task<LightStateDto> GetLightStateAsync(
@@ -32,7 +32,6 @@ internal static class ApiHttpClient
 	)
 	{
 		var url = ComposeUrl(ipAddress, "/elgato/lights");
-
 		var response = await HttpClient.GetAsync(url, cancellationToken);
 
 		response.EnsureSuccessStatusCode();
@@ -40,7 +39,7 @@ internal static class ApiHttpClient
 		var content = await response.Content.ReadAsStringAsync(cancellationToken);
 		var data = JsonSerializer.Deserialize<LightsResponseDto>(content);
 
-		return data.Lights.Count > 0 ? data.Lights[0] : new LightStateDto();
+		return data is not null && data.Lights.Count > 0 ? data.Lights[0] : new LightStateDto();
 	}
 
 	internal static async Task SetPowerStateAsync(
