@@ -44,8 +44,6 @@ public class PowerToggleFolder : PluginDynamicFolder
 
 		if (actions.Count > 0)
 		{
-			this._state[AllLights] = ("Toggle All", false);
-
 			actions.Insert(0, this.CreateCommandName(AllLights));
 		}
 
@@ -66,22 +64,13 @@ public class PowerToggleFolder : PluginDynamicFolder
 			return;
 		}
 
-		var currentPowerState = this._state.TryGetValue(actionParameter, out var state) && state.PowerState;
-		var nextPowerState = !currentPowerState;
-
-		this._state[actionParameter] = state with { PowerState = nextPowerState };
-
 		if (actionParameter == AllLights)
 		{
-			this._state
-				.Where(entry => entry.Key != AllLights).ToList()
-				.ForEach(entry => this.RunCommand(entry.Key));
+			this.ToggleAllLights();
 			return;
 		}
 
-		this.CommandImageChanged(actionParameter);
-
-		ToggleLightPowerState(actionParameter, nextPowerState);
+		this.ToggleLight(actionParameter);
 	}
 
 	public override string GetCommandDisplayName(string actionParameter, PluginImageSize imageSize)
@@ -89,6 +78,13 @@ public class PowerToggleFolder : PluginDynamicFolder
 		if (actionParameter == NavigateUpActionName)
 		{
 			return base.GetCommandDisplayName(actionParameter, imageSize);
+		}
+
+		if (actionParameter == AllLights)
+		{
+			return this._state.Values.Any(x => x.PowerState)
+				? "Turn off all lights"
+				: "Turn on all lights";
 		}
 
 		return this._state.TryGetValue(actionParameter, out var state)
@@ -105,16 +101,17 @@ public class PowerToggleFolder : PluginDynamicFolder
 
 		using var bitmapBuilder = new BitmapBuilder(imageSize);
 
-		var (name, image) = this._state.TryGetValue(actionParameter, out var state)
-			? (state.Name, state.PowerState
-				? actionParameter == AllLights
-					? EmbeddedResources.ReadImage(ImageId.LightbulbGroupOn)
-					: EmbeddedResources.ReadImage(ImageId.LightbulbOn)
-				: actionParameter == AllLights
-					? EmbeddedResources.ReadImage(ImageId.LightbulbGroupOff)
-					: EmbeddedResources.ReadImage(ImageId.LightbulbOff)
-			)
-			: ("", null);
+		var (name, image) =
+			actionParameter == AllLights
+				? this._state.Values.Any(x => x.PowerState)
+					? ("All lights", EmbeddedResources.ReadImage(ImageId.LightbulbGroupOn))
+					: ("All lights", EmbeddedResources.ReadImage(ImageId.LightbulbGroupOff))
+				: this._state.TryGetValue(actionParameter, out var state)
+					? (state.Name, state.PowerState
+						? EmbeddedResources.ReadImage(ImageId.LightbulbOn)
+						: EmbeddedResources.ReadImage(ImageId.LightbulbOff)
+					)
+					: ("", null);
 
 		if (image is not null)
 		{
@@ -141,6 +138,33 @@ public class PowerToggleFolder : PluginDynamicFolder
 		return bitmapBuilder.ToImage();
 	}
 
-	private static void ToggleLightPowerState(string ipAddress, bool enable) =>
-		ApiClient.SetPowerState(ipAddress, enable);
+	private void ToggleAllLights()
+	{
+		var currentPowerState = this._state.Values.Any(x => x.PowerState);
+		var nextPowerState = !currentPowerState;
+
+		this._state.Keys.ToList().ForEach((ipAddress) =>
+		{
+			this._state[ipAddress] = this._state[ipAddress] with { PowerState = nextPowerState };
+
+			this.CommandImageChanged(ipAddress);
+
+			ApiClient.SetPowerState(ipAddress, nextPowerState);
+		});
+
+		this.CommandImageChanged(AllLights);
+	}
+
+	private void ToggleLight(string ipAddress)
+	{
+		var currentPowerState = this._state.TryGetValue(ipAddress, out var state) && state.PowerState;
+		var nextPowerState = !currentPowerState;
+
+		this._state[ipAddress] = state with { PowerState = nextPowerState };
+
+		this.CommandImageChanged(AllLights);
+		this.CommandImageChanged(ipAddress);
+
+		ApiClient.SetPowerState(ipAddress, nextPowerState);
+	}
 }
