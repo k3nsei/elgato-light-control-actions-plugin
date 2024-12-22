@@ -18,7 +18,7 @@ public class ColorTemperatureFolder : PluginDynamicFolder
 		this.Description = "Adjust the color temperature of your lights";
 		this.GroupName = string.Join(ActionGroupName.Separator, "Folders", ActionGroupName.Adjustments);
 
-		PluginDeviceManager.DevicesObservable.Subscribe(devices =>
+		var subscription = PluginDeviceManager.DevicesObservable.Subscribe(devices =>
 		{
 			foreach (var entry in devices)
 			{
@@ -29,7 +29,11 @@ public class ColorTemperatureFolder : PluginDynamicFolder
 				this.AdjustmentValueChanged(key);
 				this.AdjustmentImageChanged(key);
 			}
+
+			this.ButtonActionNamesChanged();
 		});
+
+		(this.Plugin as ElgatoLightControlPlugin)?.CancellationToken.Register(subscription.Dispose);
 	}
 
 	public override PluginDynamicFolderNavigation GetNavigationArea(DeviceType deviceType) =>

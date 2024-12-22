@@ -1,5 +1,6 @@
 namespace ElgatoLightControl.ApiClient;
 
+using System.Net;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -48,11 +49,17 @@ public static class ApiClient
 		).Subscribe();
 	}
 
-	public static Task<LightInfo> GetLightInfo(string ipAddress) =>
-		Dispatcher.Query<LightInfoQuery, LightInfo>(new LightInfoQuery(ipAddress));
+	public static Task<LightInfo> GetLightInfo(IPAddress ipAddress, CancellationToken cancellationToken = default) =>
+		GetLightInfo(ipAddress.ToString(), cancellationToken);
 
-	public static Task<LightState> GetLightState(string ipAddress) =>
-		Dispatcher.Query<LightStateQuery, LightState>(new LightStateQuery(ipAddress));
+	public static Task<LightInfo> GetLightInfo(string ipAddress, CancellationToken cancellationToken = default) =>
+		Dispatcher.Query<LightInfoQuery, LightInfo>(new LightInfoQuery(ipAddress), cancellationToken);
+
+	public static Task<LightState> GetLightState(IPAddress ipAddress, CancellationToken cancellationToken = default) =>
+		GetLightState(ipAddress.ToString(), cancellationToken);
+
+	public static Task<LightState> GetLightState(string ipAddress, CancellationToken cancellationToken = default) =>
+		Dispatcher.Query<LightStateQuery, LightState>(new LightStateQuery(ipAddress), cancellationToken);
 
 	public static void TurnOn(string ipAddress) =>
 		SetPowerState(ipAddress, true);

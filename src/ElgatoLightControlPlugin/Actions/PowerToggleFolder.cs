@@ -19,7 +19,7 @@ public class PowerToggleFolder : PluginDynamicFolder
 		this.Description = "Toggle the power state of your lights";
 		this.GroupName = string.Join(ActionGroupName.Separator, "Folders", ActionGroupName.PowerManagement);
 
-		PluginDeviceManager.DevicesObservable.Subscribe(devices =>
+		var subscription = PluginDeviceManager.DevicesObservable.Subscribe(devices =>
 		{
 			foreach (var entry in devices)
 			{
@@ -27,10 +27,14 @@ public class PowerToggleFolder : PluginDynamicFolder
 
 				this._state[key] = (entry.LightInfo.Value.DisplayName, entry.LightState.Value.PowerState);
 
-				this.AdjustmentValueChanged(key);
-				this.AdjustmentImageChanged(key);
+				this.CommandImageChanged(key);
 			}
+
+			this.CommandImageChanged(AllLights);
+			this.ButtonActionNamesChanged();
 		});
+
+		(this.Plugin as ElgatoLightControlPlugin)?.CancellationToken.Register(subscription.Dispose);
 	}
 
 	public override PluginDynamicFolderNavigation GetNavigationArea(DeviceType deviceType) =>

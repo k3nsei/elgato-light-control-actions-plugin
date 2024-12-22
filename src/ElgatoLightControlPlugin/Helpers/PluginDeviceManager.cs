@@ -34,6 +34,20 @@ public static class PluginDeviceManager
 		.SelectMany(MapToDeviceEntry)
 		.Scan(MergeDeviceEntryLists)
 		.Do(SaveKnownDevices)
+		.Throttle(TimeSpan.FromSeconds(2))
+		.Select((entries) =>
+		{
+			var cts = new CancellationTokenSource();
+			return Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(10))
+				.SelectMany(_ =>
+				{
+					cts.Cancel();
+					cts = new CancellationTokenSource();
+					return WithDevicesState(entries, cts.Token);
+				})
+				.StartWith(entries);
+		})
+		.Switch()
 		.Publish()
 		.RefCount();
 
@@ -62,18 +76,42 @@ public static class PluginDeviceManager
 	{
 		try
 		{
-			var lightInfo = await ApiClient.GetLightInfo(input.IpAddress.ToString());
-
-			PluginLogger.Verbose($"Light info for {input.DeviceId} at {input.IpAddress}: {lightInfo}");
+			var lightInfo = await ApiClient.GetLightInfo(input.IpAddress);
 
 			return new[] { (input.DeviceId, input.IpAddress, lightInfo, LightState.Empty) }.ToList();
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			PluginLogger.Error(e, $"Failed to get light info for {input.DeviceId} at {input.IpAddress}");
+			PluginLogger.Error(ex, $"Failed to get light info for {input.DeviceId} at {input.IpAddress}");
 		}
 
 		return new[] { (input.DeviceId, input.IpAddress, LightInfo.Empty, LightState.Empty) }.ToList();
+	}
+
+	private static async Task<List<TDeviceEntry>> WithDevicesState(
+		List<TDeviceEntry> entries,
+		CancellationToken cancellationToken
+	)
+	{
+		var tasks = entries.Select(async entry =>
+		{
+			try
+			{
+				var lightState = await ApiClient.GetLightState(entry.IpAddress, cancellationToken);
+
+				return entry with { LightState = lightState };
+			}
+			catch (Exception ex)
+			{
+				PluginLogger.Error(ex, $"Failed to get light state for {entry.DeviceId} at {entry.IpAddress}");
+			}
+
+			return entry;
+		});
+
+		var results = await Task.WhenAll(tasks);
+
+		return results.ToList();
 	}
 
 	private static List<TDeviceEntry> MergeDeviceEntryLists(
@@ -86,12 +124,13 @@ public static class PluginDeviceManager
 		     .ToList()
 	     ?? curr;
 
-	private static void Restore() =>
-		ReadKnownDevices()
-			.ToList()
-			.ForEach(
-				device => AddDevice(device.DeviceId, device.IpAddress)
-			);
+	private static void Restore()
+	{
+		foreach (var device in ReadKnownDevices())
+		{
+			AddDevice(device.DeviceId, device.IpAddress);
+		}
+	}
 
 	private static List<TDeviceInput> ReadKnownDevices()
 	{

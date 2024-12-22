@@ -30,13 +30,13 @@ public class DeviceDiscovery : IDisposable
 
 	private async Task SendQuery(CancellationToken cancellationToken)
 	{
-		Logger.Verbose($"Sending query for {ServiceName}");
+		// Logger.Verbose($"Sending query for {ServiceName}");
 
 		await ZeroconfResolver.ResolveAsync(
 			ServiceName,
 			callback: host =>
 			{
-				Logger.Verbose($"Discovered device: {host.DisplayName} at {host.IPAddress}");
+				// Logger.Verbose($"Discovered device: {host.DisplayName} at {host.IPAddress}");
 
 				this.DeviceDiscovered?.Invoke(this, new DeviceDiscoveredEventArgs(host.DisplayName, host.IPAddress));
 			},
