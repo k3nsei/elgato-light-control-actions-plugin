@@ -30,6 +30,7 @@ public class BrightnessFolder : PluginDynamicFolder
 			}
 
 			this.ButtonActionNamesChanged();
+			this.EncoderActionNamesChanged();
 		});
 
 		(this.Plugin as ElgatoLightControlPlugin)?.CancellationToken.Register(subscription.Dispose);
@@ -47,6 +48,14 @@ public class BrightnessFolder : PluginDynamicFolder
 
 		return new[] { NavigateUpActionName }.Union(actions);
 	}
+
+	public override IEnumerable<string> GetEncoderPressActionNames(DeviceType deviceType) =>
+		DevicesWithEncoders.Supported.HasFlag(deviceType)
+			? this.GetButtonPressActionNames(deviceType).Skip(1)
+			: [];
+
+	public override IEnumerable<string> GetEncoderRotateActionNames(DeviceType deviceType) =>
+		this.GetEncoderPressActionNames(deviceType);
 
 	public override void ApplyAdjustment(string actionParameter, int diff)
 	{

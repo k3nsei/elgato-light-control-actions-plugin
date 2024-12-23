@@ -31,7 +31,9 @@ public class PowerToggleFolder : PluginDynamicFolder
 			}
 
 			this.CommandImageChanged(AllLights);
+
 			this.ButtonActionNamesChanged();
+			this.EncoderActionNamesChanged();
 		});
 
 		(this.Plugin as ElgatoLightControlPlugin)?.CancellationToken.Register(subscription.Dispose);
@@ -54,6 +56,11 @@ public class PowerToggleFolder : PluginDynamicFolder
 
 		return new[] { NavigateUpActionName }.Union(actions);
 	}
+
+	public override IEnumerable<string> GetEncoderPressActionNames(DeviceType deviceType) =>
+		DevicesWithEncoders.Supported.HasFlag(deviceType)
+			? this.GetButtonPressActionNames(deviceType).Skip(1)
+			: [];
 
 	public override void RunCommand(string actionParameter)
 	{
