@@ -10,9 +10,9 @@ public static class ImageId
 
 	public static readonly string LightbulbOn = "Loupedeck.ElgatoLightControlPlugin.Images.LightbulbOn.png";
 
-	public static readonly string LightbulbGroupOff = "Loupedeck.ElgatoLightControlPlugin.Images.LightbulbGroupOff.png";
+	public static readonly string LightbulbGroupOff = "Loupedeck.ElgatoLightControlPlugin.Images.LightbulbGroupOff.svg";
 
-	public static readonly string LightbulbGroupOn = "Loupedeck.ElgatoLightControlPlugin.Images.LightbulbGroupOn.png";
+	public static readonly string LightbulbGroupOn = "Loupedeck.ElgatoLightControlPlugin.Images.LightbulbGroupOn.svg";
 
 	public static readonly string TemperatureFolder = "Loupedeck.ElgatoLightControlPlugin.Images.TemperatureFolder.svg";
 }

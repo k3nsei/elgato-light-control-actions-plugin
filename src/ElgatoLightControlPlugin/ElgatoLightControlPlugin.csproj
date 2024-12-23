@@ -43,7 +43,9 @@
     <None Remove="Images\LightbulbOff.png"/>
     <None Remove="Images\LightbulbOn.png"/>
     <None Remove="Images\LightbulbGroupOff.png"/>
+    <None Remove="Images\LightbulbGroupOff.svg"/>
     <None Remove="Images\LightbulbGroupOn.png"/>
+    <None Remove="Images\LightbulbGroupOn.svg"/>
     <None Remove="Images\TemperatureFolder.png"/>
     <None Remove="Images\TemperatureFolder.svg"/>
   </ItemGroup>
@@ -56,7 +58,9 @@
     <EmbeddedResource Include="Images\LightbulbOff.png"/>
     <EmbeddedResource Include="Images\LightbulbOn.png"/>
     <EmbeddedResource Include="Images\LightbulbGroupOff.png"/>
+    <EmbeddedResource Include="Images\LightbulbGroupOff.svg"/>
     <EmbeddedResource Include="Images\LightbulbGroupOn.png"/>
+    <EmbeddedResource Include="Images\LightbulbGroupOn.svg"/>
     <EmbeddedResource Include="Images\TemperatureFolder.png"/>
     <EmbeddedResource Include="Images\TemperatureFolder.svg"/>
   </ItemGroup>
