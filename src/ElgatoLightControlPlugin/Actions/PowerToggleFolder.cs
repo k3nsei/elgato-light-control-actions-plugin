@@ -1,5 +1,7 @@
 ﻿namespace Loupedeck.ElgatoLightControlPlugin.Actions;
 
+using System.Net;
+
 using Constants;
 
 using ElgatoLightControl.ApiClient;
@@ -27,9 +29,11 @@ public class PowerToggleFolder : PluginDynamicFolder
 
 				this._state[key] = (entry.LightInfo.Value.DisplayName, entry.LightState.Value.PowerState);
 
+				this.AdjustmentImageChanged(key);
 				this.CommandImageChanged(key);
 			}
 
+			this.AdjustmentImageChanged(AllLights);
 			this.CommandImageChanged(AllLights);
 
 			this.ButtonActionNamesChanged();
@@ -62,6 +66,18 @@ public class PowerToggleFolder : PluginDynamicFolder
 			? this.GetButtonPressActionNames(deviceType).Skip(1)
 			: [];
 
+	public override IEnumerable<string> GetEncoderRotateActionNames(DeviceType deviceType)
+	{
+		var actions = this._state.Keys.Select(this.CreateAdjustmentName).ToList();
+
+		if (actions.Count > 0)
+		{
+			actions.Insert(0, this.CreateAdjustmentName(AllLights));
+		}
+
+		return actions;
+	}
+
 	public override void RunCommand(string actionParameter)
 	{
 		if (string.IsNullOrWhiteSpace(actionParameter))
@@ -85,6 +101,25 @@ public class PowerToggleFolder : PluginDynamicFolder
 		this.ToggleLight(actionParameter);
 	}
 
+	public override void ApplyAdjustment(string actionParameter, int diff)
+	{
+		if (!IPAddress.TryParse(actionParameter, out _) && actionParameter != AllLights)
+		{
+			base.ApplyAdjustment(actionParameter, diff);
+			return;
+		}
+
+		var nextPowerState = diff > 0;
+
+		if (actionParameter == AllLights)
+		{
+			this.ToggleAllLights(nextPowerState);
+			return;
+		}
+
+		this.ToggleLight(actionParameter, nextPowerState);
+	}
+
 	public override string GetCommandDisplayName(string actionParameter, PluginImageSize imageSize)
 	{
 		if (actionParameter == NavigateUpActionName)
@@ -103,6 +138,9 @@ public class PowerToggleFolder : PluginDynamicFolder
 			? state.Name
 			: string.Empty;
 	}
+
+	public override string GetAdjustmentDisplayName(string actionParameter, PluginImageSize imageSize) =>
+		this.GetCommandDisplayName(actionParameter, imageSize);
 
 	public override BitmapImage GetCommandImage(string actionParameter, PluginImageSize imageSize)
 	{
@@ -126,10 +164,13 @@ public class PowerToggleFolder : PluginDynamicFolder
 		return PowerToggleImage.ToImage(name, type, imageSize);
 	}
 
-	private void ToggleAllLights()
+	public override BitmapImage GetAdjustmentImage(string actionParameter, PluginImageSize imageSize) =>
+		this.GetCommandImage(actionParameter, imageSize);
+
+	private void ToggleAllLights(bool? forcedPowerState = null)
 	{
 		var currentPowerState = this._state.Values.Any(x => x.PowerState);
-		var nextPowerState = !currentPowerState;
+		var nextPowerState = forcedPowerState ?? !currentPowerState;
 
 		this._state.Keys.ToList().ForEach((ipAddress) =>
 		{
@@ -143,10 +184,10 @@ public class PowerToggleFolder : PluginDynamicFolder
 		this.CommandImageChanged(AllLights);
 	}
 
-	private void ToggleLight(string ipAddress)
+	private void ToggleLight(string ipAddress, bool? forcedPowerState = null)
 	{
 		var currentPowerState = this._state.TryGetValue(ipAddress, out var state) && state.PowerState;
-		var nextPowerState = !currentPowerState;
+		var nextPowerState = forcedPowerState ?? !currentPowerState;
 
 		this._state[ipAddress] = state with { PowerState = nextPowerState };
 
