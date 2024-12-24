@@ -77,15 +77,13 @@ public static class PluginDeviceManager
 		try
 		{
 			var lightInfo = await ApiClient.GetLightInfo(input.IpAddress);
-
 			return new[] { (input.DeviceId, input.IpAddress, lightInfo, LightState.Empty) }.ToList();
 		}
 		catch (Exception ex)
 		{
 			PluginLogger.Error(ex, $"Failed to get light info for {input.DeviceId} at {input.IpAddress}");
+			return new[] { (input.DeviceId, input.IpAddress, LightInfo.Empty, LightState.Empty) }.ToList();
 		}
-
-		return new[] { (input.DeviceId, input.IpAddress, LightInfo.Empty, LightState.Empty) }.ToList();
 	}
 
 	private static async Task<List<TDeviceEntry>> WithDevicesState(
@@ -98,20 +96,16 @@ public static class PluginDeviceManager
 			try
 			{
 				var lightState = await ApiClient.GetLightState(entry.IpAddress, cancellationToken);
-
 				return entry with { LightState = lightState };
 			}
 			catch (Exception ex)
 			{
 				PluginLogger.Error(ex, $"Failed to get light state for {entry.DeviceId} at {entry.IpAddress}");
+				return entry;
 			}
-
-			return entry;
 		});
 
-		var results = await Task.WhenAll(tasks);
-
-		return results.ToList();
+		return (await Task.WhenAll(tasks)).ToList();
 	}
 
 	private static List<TDeviceEntry> MergeDeviceEntryLists(
@@ -137,7 +131,6 @@ public static class PluginDeviceManager
 		try
 		{
 			var data = PluginKeyValueStore.Get(SettingName.KnownDevices);
-
 			if (!string.IsNullOrWhiteSpace(data))
 			{
 				return JsonSerializer.Deserialize<List<List<string>>>(data)
@@ -145,15 +138,13 @@ public static class PluginDeviceManager
 					.ToList();
 			}
 		}
+		catch (SerializationException ex)
+		{
+			PluginLogger.Error(ex, "Serialization error of stored known devices");
+		}
 		catch (Exception ex)
 		{
-			var errorMessage = ex switch
-			{
-				SerializationException => "Serialization error of stored known devices",
-				_ => "Unexpected error while reading known devices"
-			};
-
-			PluginLogger.Error(ex, errorMessage);
+			PluginLogger.Error(ex, "Unexpected error while reading known devices");
 		}
 
 		return [];
@@ -164,7 +155,6 @@ public static class PluginDeviceManager
 		var data = devices.Select(
 			device => new List<string> { device.DeviceId, device.IpAddress.ToString() }
 		);
-
 		var content = JsonSerializer.Serialize(data);
 
 		PluginKeyValueStore.Set(SettingName.KnownDevices, content);

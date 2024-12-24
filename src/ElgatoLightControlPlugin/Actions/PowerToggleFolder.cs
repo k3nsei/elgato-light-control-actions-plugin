@@ -152,16 +152,16 @@ public class PowerToggleFolder : PluginDynamicFolder
 		var (name, type) =
 			actionParameter == AllLights
 				? this._state.Values.Any(x => x.PowerState)
-					? ("All lights", PowerToggleImage.AllLightsOn)
-					: ("All lights", PowerToggleImage.AllLightsOff)
+					? ("All lights", PowerStateImage.AllLightsOn)
+					: ("All lights", PowerStateImage.AllLightsOff)
 				: this._state.TryGetValue(actionParameter, out var state)
 					? (state.Name, state.PowerState
-						? PowerToggleImage.LightOn
-						: PowerToggleImage.LightOff
+						? PowerStateImage.LightOn
+						: PowerStateImage.LightOff
 					)
 					: ("", null);
 
-		return PowerToggleImage.ToImage(name, type, imageSize);
+		return PowerStateImage.ToImage(name, type, imageSize);
 	}
 
 	public override BitmapImage GetAdjustmentImage(string actionParameter, PluginImageSize imageSize) =>

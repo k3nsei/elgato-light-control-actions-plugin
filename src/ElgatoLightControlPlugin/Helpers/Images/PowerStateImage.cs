@@ -2,7 +2,7 @@ namespace Loupedeck.ElgatoLightControlPlugin.Helpers.Images;
 
 using Constants;
 
-internal static class PowerToggleImage
+internal static class PowerStateImage
 {
 	internal const string AllLightsOn = "AllLightsOn";
 
